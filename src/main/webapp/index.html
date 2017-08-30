@@ -1,0 +1,929 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>MontiSim Visualization</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" href="fontawesome/css/font-awesome.min.css">
+		<style>
+			body {
+				background:#000;
+				color:#fff;
+				padding:0;
+				margin:0;
+				overflow:hidden;
+				font-family:Monospace;
+				text-align:center;
+			}
+			h1 { }
+			a { color:skyblue; text-decoration:none }
+			canvas { pointer-events:none; z-index:10; position:relative; }
+
+			#d { position:absolute; width: 100%; text-align:center; margin:1em 0 -4.5em 0; z-index:1000; }
+
+			.bwrap { margin:0.5em 0 0 0 }
+			button { font-family:georgia; border:0; background:#000; color:#fff; padding:0.2em 0.5em; cursor:pointer; border-radius:3px; }
+			button:hover { background:#333 }
+			#buttons_cars button { color:#fa0; }
+
+			#car_info { text-align:center; }
+			#car_name { font-size:1em }
+			#car_author { font-size:1em }
+
+			#oldie { background:rgb(50,0,0) !important; color:#fff !important; margin-top:7em!important }
+
+			.lbl { color:#fff; font-size:14px; font-weight:bold; position: absolute; z-index:100; text-shadow:#000 1px 1px 1px; background-color:rgba(0,0,0,0.85); padding:1em }
+			#lbl1 { right:0px; background-color:#FF0000 }
+			#lbl2 { text-align:left; bottom:0px; right:0px }
+
+			#footer {
+		    position: fixed;
+		    bottom: 0;
+		    width: 100%;
+			}
+		#stacked {
+			display:block;
+			margin: auto;
+		}
+			#Up {
+				margin-bottom: 30px;
+				font-size: 40px;
+				border-radius: 10px;
+				border-color: grey;
+				border: 2px solid #73AD21;
+				background-color: grey;
+			}
+			#Down {
+				font-size: 40px;
+				border-radius: 10px;
+				border-color: grey;
+				border: 2px solid #73AD21;
+				background-color: grey;
+			}
+			#Left {
+				font-size: 40px;
+				margin-right: 30px;
+				border-radius: 10px;
+				border-color: grey;
+				border: 2px solid #73AD21;
+				background-color: grey;
+			}
+			#Right {
+				font-size: 40px;
+				margin-left: 30px;
+				border-radius: 10px;
+				border: 2px solid #73AD21;
+				background-color: grey;
+			}
+
+			.big-btn {
+        width: 90px;
+        height: 70px;
+    }
+
+
+    	#Up.active, #Down.active, #Left.active, #Right.active { background-color: black; }
+		</style>
+
+		<script src="build/sockjs/sockjs-1.1.1.js"></script>
+		<script src="build/stomp/stomp-1.7.1.js"></script>
+		<script src="js/Messaging.js"></script>
+		<script type="text/javascript" src="utils/fileHelper/FileSaver.js"></script>
+
+	</head>
+
+	<body>
+		<div id="lbl1" class="lbl">
+				<button id="startSimulation" onclick="onStartClick(); WebService.WS_start(); WebService.WS_nextFrame()">Start</button>
+				<button id="stopSimulation" onclick="WebService.WS_stop()">Stop</button>
+		</div>
+
+		<div id="d">
+			<div id="buttons_cars"></div>
+			<div id="footer">
+				<div id="stacked">
+					<div>
+						<button id="Up" class="big-btn"><i class="fa fa-arrow-up fa-lg" style="font-size: 30px" aria-hidden="true">W</i></button>
+					</div>
+					<div>
+						<button id="Left" class="big-btn"><i class="fa fa-arrow-left fa-lg" style="font-size: 30px" aria-hidden="true">A</i></button>
+						<button id="Down" class="big-btn"><i class="fa fa-arrow-down fa-lg" style="font-size: 30px" aria-hidden="true">S</i>
+						</button>
+						<button id="Right" class="big-btn"><i class="fa fa-arrow-right fa-lg" style="font-size: 30px" aria-hidden="true">D</i></button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div id="lbl2" class="lbl">
+			Controls: <br />
+			c - change Camera<br />
+			u - Orbit Control<br />
+			p - Screenshot<br />
+			h - toggle HUD<br />
+			l - use Stereo
+		</div>
+
+		<canvas id="hiddenCanvas"></canvas>
+		<canvas id="hiddenCanvasLowRes"></canvas>
+
+
+		<script src="build/three.js"></script>
+
+		<script src="examples/js/loaders/BinaryLoader.js"></script>
+
+		<script src="examples/js/Detector.js"></script>
+		<script src="examples/js/libs/stats.min.js"></script>
+		<script src="examples/js/Car.js"></script>
+		<script src="js/math.min.js"></script>
+		<!-- <script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/OrbitControls.js"></script> -->
+		<script src="js/three.orbitcontrols.js"></script>
+
+        <!-- Dependencies -->
+        <script src="src/extras/core/Shape.js"></script>
+        <script src="src/extras/geometries/ExtrudeGeometry.js"></script>
+		<!-- Modules -->
+		<script src="js/ControlButtons.js"></script>
+
+		<script src="js/CameraController.js"></script>
+		<script src="js/EnvBuilder.js"></script>
+		<script src="js/LightController.js"></script>
+		<script src="js/RainController.js"></script>
+		<script src="js/CarController.js"></script>
+		<script src="js/MeshBuilder.js"></script>
+		<script src="utils/fileHelper/jszip.js"></script>
+		<script src="utils/machineLearning/CarDetectionTrainingData.js"></script>
+
+        <script src="js/Materials.js"></script>
+        <script src="js/CarBuilder.js"></script>
+
+		<script src="js/WebService.js"></script>
+		<script src="js/DataModel.js"></script>
+
+		<script>
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var STATS_ENABLED = false;
+			var currentCar = null;
+			var heightData;
+			var planeX = 4096;
+			var planeZ = 4096;
+			var planeXVerts = 128;
+			var planeZVerts = 128;
+
+			var CARS = {};
+
+			var container, stats;
+
+			var camera, hCamera, scene, renderer, rendererH, controls, effect, canvas;
+
+			var m, mi;
+
+			var useStereo = false;
+			var dayNightCircle = true;
+
+			var directionalLight;
+
+			var mouseX = 0, mouseY = 0;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			var screenIter = 1;
+
+			var loader = new THREE.BinaryLoader();
+			var jsonLoader = new THREE.JSONLoader();
+			var tgaLoader = new THREE.TextureLoader();
+
+			var meshArr = [];
+			meshArr.trafficLights = [];
+			meshArr.pedestrians = [];
+
+			var cameraController = null;
+			var carController = new CarController();
+			var rainController = new RainController();
+
+			var clock = new THREE.Clock();
+			var timeDelta = null;
+
+			var LS_Meshcounter = 0;
+			var LS_Dbg = false;
+			var LS_flag = true;
+
+			var stereoCameraBaseline = 2;
+
+			init();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				// CANVAS
+
+				hCanvasLowRes = document.getElementById("hiddenCanvasLowRes");
+				hCanvasLowRes.width = 600;
+				hCanvasLowRes.height = 300;
+				hCanvasLowRes.style.left = "0px";
+				hCanvasLowRes.style.top = "0px";
+				hCanvasLowRes.style.position = "absolute";
+				hCanvasLowRes.style.display = "none";
+
+				hCanvas = document.getElementById("hiddenCanvas");
+				hCanvas.width = window.innerWidth;
+				hCanvas.height = window.innerHeight;
+				hCanvas.style.left = "0px";
+				hCanvas.style.top = "0px";
+				hCanvas.style.position = "absolute";
+				hCanvas.style.display = "none";
+
+				// CAMERAS
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 100, 15000 );
+				camera.projectionMatrix.scale(new THREE.Vector3(-1, 1, 1));
+
+				hCamera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 10, 10000 );
+
+				// ORBIT CONTROL
+
+				controls = new THREE.OrbitControls(camera);
+				controls.minDistance = 0;
+				controls.maxDistance = Infinity;
+				controls.enabled = true;
+				controls.target.set(90000, 50, 72000);
+
+				// SCENE
+
+				var textureCube = new THREE.CubeTextureLoader()
+                //forest background
+                //    .setPath('img/textures/Background/')
+                //    .load(['posx.jpg', 'negx.jpg', 'posy.jpg', 'negy.jpg', 'posz.jpg', 'negz.jpg']);
+                //skybox background
+					.setPath( 'examples/textures/cube/skybox/')
+					.load( [ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ] );
+
+				scene = new THREE.Scene();
+
+				//Add fog
+				//scene.fog = new THREE.Fog( 0x808080, 2500, 8000 );
+				scene.background = textureCube; //Fog does not work with background!
+
+				var carBuilder = new CarBuilder(textureCube);
+
+				//attach CameraController
+				cameraController = new CameraController(camera);
+				cameraController.setCameraPosition(cameraController.DEFAULT_CAMERA);
+				cameraController.enableKeyListener();
+				cameraController.updateCameraOrigin(90000, 170, 70000);
+
+				rainController.init(scene);
+
+				//draw line between v1 and v2 with color
+				function lineDbg(v1, v2, dbgColor) {
+					var mat = new THREE.LineBasicMaterial({color: dbgColor});
+					var geometry = new THREE.Geometry();
+					geometry.vertices.push( v1, v2 );
+
+					var line = new THREE.Line( geometry, mat );
+					scene.add( line );
+				}
+
+				//place sign at corresponding position
+				function meshHelper(meshBuilder, node, prev) {
+					var meshType = node.streetSign.type;
+					var id = node.streetSign.id;
+					var angle = 0;
+					if(typeof prev != 'undefined') angle = -(Math.atan2(node.z - prev.z, node.x - prev.x) + 3/2*math.pi);
+					switch(meshType) {
+						case "EMPTY_SIGN":
+							break;
+						case "TRAFFIC_LIGHT":
+							if(node.streetSign.one) meshBuilder.addTrafficLight( id, {x: node.streetSign.x1, y:0 , z: node.streetSign.z1}, {x:0, y:angle + math.pi, z:0} );
+							if(node.streetSign.two) meshBuilder.addTrafficLight( id, {x: node.streetSign.x2, y:0 , z: node.streetSign.z2}, {x:0, y:angle, z:0} );
+							break;
+						case "EGG_SIGN":
+							if(node.streetSign.one) meshBuilder.addEggSign( id, {x: node.streetSign.x1, y:0 , z: node.streetSign.z1}, {x:0, y:angle, z:0} );
+							if(node.streetSign.two) meshBuilder.addEggSign( id, {x: node.streetSign.x2, y:0 , z: node.streetSign.z2}, {x:0, y:angle + math.pi, z:0} );
+							break;
+						case "INTERSECTION_SIGN":
+							if(node.streetSign.one) meshBuilder.addIntersectionSign( id, {x: node.streetSign.x1, y:0 , z: node.streetSign.z1}, {x:0, y:angle, z:0} );
+							if(node.streetSign.two) meshBuilder.addIntersectionSign( id, {x: node.streetSign.x2, y:0 , z: node.streetSign.z2}, {x:0, y:angle + math.pi, z:0} );
+							break;
+						case "STOP_SIGN":
+							if(node.streetSign.one) meshBuilder.addStopSign( id, {x: node.streetSign.x1, y:0 , z: node.streetSign.z1}, {x:0, y:angle, z:0} );
+							if(node.streetSign.two) meshBuilder.addStopSign( id, {x: node.streetSign.x2, y:0 , z: node.streetSign.z2}, {x:0, y:angle + math.pi, z:0} );
+							break;
+						case "PRIORITY_SIGN":
+							if(node.streetSign.one) meshBuilder.addPrioritySign( id, {x: node.streetSign.x1, y:0 , z: node.streetSign.z1}, {x:0, y:angle, z:0} );
+							if(node.streetSign.two) meshBuilder.addPrioritySign( id, {x: node.streetSign.x2, y:0 , z: node.streetSign.z2}, {x:0, y:angle + math.pi, z:0} );
+							break;
+						default:
+							meshBuilder.addDummy( -2, {x: node.x, y: node.y, z: node.z}, {x:0, y:angle + math.pi, z:0} );
+							break;
+					}
+					//show nodes and connections
+					if(LS_Dbg) {
+						if(node.streetSign.one) lineDbg({x: node.x, y: 40, z: node.z}, {x: node.streetSign.x1, y:40 , z: node.streetSign.z1}, 0xcc5c00);
+						if(node.streetSign.two) lineDbg({x: node.x, y: 40, z: node.z}, {x: node.streetSign.x2, y:40 , z: node.streetSign.z2}, 0x0000ff);
+						meshBuilder.addDummy( -2, {x: node.x, y: node.y, z: node.z}, {x:0, y:angle, z:0} );
+					}
+
+				}
+
+				//ATTACH DATA HANDLERS
+				//environment
+				DataModel.addHandler(DataModel.STREETS_HANDLER, function streetsHandler(data, resolve, reject) {
+					var eb = new EnvBuilder(tgaLoader, scene);
+					var mb = new MeshBuilder(jsonLoader, tgaLoader, scene, meshArr);
+					var prevNode;
+					for(var i=0; i<data.length; ++i) {
+						//nodes for streets and signs
+						for(var n=0; n<data[i].nodes.length; ++n) {
+							var node = data[i].nodes[n];
+							if(LS_Meshcounter < 200) {
+								meshHelper(mb, node, prevNode);
+							}
+							prevNode = {x: node.x, z: node.z};
+
+							data[i].nodes[n] = new THREE.Vector3(node.x, node.y, node.z);
+						}
+						eb.drawRoad(data[i].nodes, data[i].streetWidth);
+					}
+          			resolve();
+				});
+
+				//map bounds (terrain)
+				DataModel.addHandler(DataModel.BOUNDS_HANDLER, function terrainHandler(data, resolve, reject) {
+					var eb = new EnvBuilder(tgaLoader, scene);
+					eb.addTerrain(data);
+					resolve();
+				});
+
+				//cars
+				DataModel.addHandler(DataModel.CARS_HANDLER, function carsHandler(data, resolve, reject) {
+					for(var i=0; i<data.length; ++i) {
+						console.log("Car[" + i + "]: (" + data[i].position.x + ", " + data[i].position.y + ", " + data[i].position.z + ")");
+                        var carExists = false;
+                        //check if the car already exists
+                        for(var c in CARS)
+                            if(carExists = (CARS[c].id === data[i].id)) break;
+
+                        if(carExists) {
+                            console.log('Update car position');
+                            carController.handleData(data[i], resolve);
+                        }else {
+														//fixed car type and material
+													  data[i].type = "veyron";
+														data[i].material = 13;
+
+                            CARS[data[i].id] = carBuilder.build(data[i].id, data[i].type, data[i].material, data[i].position, scene); //data .type and .material are currently undefined, so we get random values
+                            console.log('New car added');
+                            window.setTimeout(resolve, 2000); //Some time to display the car
+                        }
+					}
+
+                    //add new cars to carController
+                    for (var carName in CARS){
+                        carController.addCar(carName, CARS[carName]);
+                        //TODO switch to specific car, depending on the server desire
+                        if(currentCar == null || currentCar == undefined) switchCar(carName); //the first initialized car
+                        initCarButton( carName );
+                    }
+				});
+
+				//rain
+				DataModel.addHandler(DataModel.RAIN_HANDLER, function rainHandler(data, resolve, reject) {
+					if(typeof carController.getCurrentCarObj() !== 'undefined') {
+						var carPos = carController.getCurrentCarObj().model.root.position;
+					}
+
+					if(data) {
+						rainController.startRaining(scene, carPos);
+					} else {
+						rainController.stopRaining(scene);
+					}
+					resolve();
+				});
+
+				//pedestrians
+				DataModel.addHandler(DataModel.PEDESTRIANS_HANDLER, function pedestriansHandler(data, resolve, reject) {
+					var mb = new MeshBuilder(jsonLoader, tgaLoader, scene, meshArr);
+					for(var i = 0; i < data.length; ++i) {
+                        var pedestrianExists = false;
+							for(var p in meshArr.pedestrians)
+									if(pedestrianExists = (meshArr.pedestrians[p].projectID == data[i].id)) break;
+                        if(pedestrianExists) {
+                            // Compute rotation from positions
+                            var diffX = (data[i].position.x - meshArr.pedestrians[p].position.x);
+                            var diffY = (data[i].position.y - meshArr.pedestrians[p].position.y);
+                            var diffZ = (data[i].position.z - meshArr.pedestrians[p].position.z);
+                            
+                            if (diffX != 0.0 || diffY != 0.0 || diffZ != 0.0)
+                            {
+                                var diffVector = new THREE.Vector3(diffX, diffY, diffZ);
+                                var axisVector = new THREE.Vector3(0.0, 0.0, 1.0);
+                                var angle = diffVector.angleTo(axisVector);
+                                
+                                if (diffX < 0.0) {
+                                    angle = -angle;
+                                }
+
+                                meshArr.pedestrians[p].rotation.y = angle;
+                            }
+
+                            // Update position
+                            meshArr.pedestrians[p].position.set( data[i].position.x, data[i].position.y, data[i].position.z );
+                        }else {
+                            mb.addArnold(data[i].id, {x: data[i].position.x, y: data[i].position.y, z:data[i].position.z});
+                        }
+					}
+					resolve();
+				});
+
+                // Static box objects
+                DataModel.addHandler(DataModel.STATIC_BOX_OBJECT_HANDLER, function staticBoxObjectsHandler(data, resolve, reject) {
+                    for(var i = 0; i < data.length; ++i) {
+                        // PHYSICAL_OBJECT_TYPE_NETWORK_CELL_BASE_STATION
+                        if (data[i].objectType == 8)
+                        {
+                            var obj = new THREE.Mesh(new THREE.CubeGeometry(data[i].width * 100, data[i].height * 100, data[i].length * 100), new THREE.MeshLambertMaterial({color: 0x555555, side: THREE.DoubleSide}));
+                            obj.position.x = data[i].position.x;
+                            obj.position.y = data[i].position.y;
+                            obj.position.z = data[i].position.z;
+                            scene.add(obj);
+                        }
+                    }
+                    resolve();
+                });
+
+                //start animation after the environment is ready is processed
+                DataModel.onDataProcessed = animate;
+
+                //execute command after each frame has been rendered
+                DataModel.afterEachFrame = function doScreenshot() {
+					// Disable sending of screenshots to server for now for WebSocket performance
+					// Possibly wrong screenshots anyways?
+					/*
+					const carId = carController.getCurrentCar();
+					const screenshot = getScreenshotAsImg(carId);
+					WebService.WS_screenshot({	carId, screenshot });
+					*/
+				}
+
+				//attach DataModel to WebSocket connection
+				WebService.WS_attachListener(DataModel.onData);
+
+                //load environment data from server
+                WebService.get('/web-app/env/world').then(DataModel.onData);
+
+				//==========================================================================
+
+				// LIGHTS
+
+				var ambient = new THREE.AmbientLight( 0xffffff, 2 );
+				scene.add( ambient );
+
+				directionalLight = new THREE.DirectionalLight( 0xffffff, 2  );
+				directionalLight.position.set(0,1,1).normalize;
+				// scene.add( directionalLight );
+
+				hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.2 );
+				hemiLight.color.setHSL( 0.6, 0.75, 0.5 );
+				hemiLight.groundColor.setHSL( 0.095, 0.5, 0.5 );
+				hemiLight.position.set( 0, 500, 0 );
+				// scene.add( hemiLight );
+
+
+				// RENDERER
+
+				renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: true, alpha: true });
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setFaceCulling( THREE.CullFaceNone );
+				renderer.setClearColor( 0x808080 );
+
+				container.appendChild( renderer.domElement );
+				
+				// renderer for normal screenshots
+				rendererH = new THREE.WebGLRenderer({preserveDrawingBuffer: true, antialias: true, canvas: hCanvas});
+				rendererH.setPixelRatio( window.devicePixelRatio );
+				rendererH.setSize( hCanvas.width, hCanvas.height );
+				rendererH.setFaceCulling( THREE.CullFaceNone );
+				rendererH.setClearColor( 0x808080 );
+
+				container.appendChild( rendererH.domElement );
+
+				// renderer for dashCam screenshots from cars
+				rendererHLowRes = new THREE.WebGLRenderer({preserveDrawingBuffer: true, antialias: true, canvas: hCanvasLowRes});
+				rendererHLowRes.setPixelRatio( window.devicePixelRatio );
+				rendererHLowRes.setSize( hCanvasLowRes.width, hCanvasLowRes.height );
+				rendererHLowRes.setFaceCulling( THREE.CullFaceNone );
+				rendererHLowRes.setClearColor( 0x808080 );
+
+				container.appendChild( rendererHLowRes.domElement );
+
+				// stereo effect
+				effect = new THREE.StereoEffect( renderer );
+				effect.setSize( window.innerWidth, window.innerHeight );
+				effect.setEyeSeparation(stereoCameraBaseline);
+
+				// stereo effect for hidden LowRes canvas
+				effectLowRes = new THREE.StereoEffect( rendererHLowRes );
+				effectLowRes.setSize( hCanvasLowRes.width, hCanvasLowRes.height );
+				effectLowRes.setEyeSeparation(stereoCameraBaseline);
+				
+				
+				if ( STATS_ENABLED ) {
+
+					stats = new Stats();
+					container.appendChild( stats.dom );
+
+				}
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+				document.addEventListener( 'keydown', onKeyDown, false );
+			}
+			
+			//==========================================================================
+			
+			/**
+			*	Called when start button is clicked
+			*/
+			function onStartClick() {
+				// Disable orbit controls
+				controls.enabled = false;
+			}
+
+			/**
+			*	toggle some HUD elements
+			*/ 
+			function toggleHUD() {
+				var HUD = ["buttons_cars", "lbl1", "lbl2"];
+
+				for(var i = 0; i<HUD.length; i++) {
+					var display = document.getElementById(HUD[i]).style.display;
+					if(display == "block") document.getElementById(HUD[i]).style.display="none";
+					else document.getElementById(HUD[i]).style.display="block";
+				}
+			}
+			
+			/**
+			*	move camera to position
+			*	@param {int} x the x-coordinate to be set
+			*	@param {int} y the y-coordinate to be set
+			*	@param {int} z the z-coordinate to be set
+			*/
+			function goTo(x,y,z){
+				camera.position.x = x;
+				camera.position.y = y;
+				camera.position.z = z;
+			}
+
+			/**
+			*	set time
+			*	@param {string} time day, night or circle to start/stop cycle
+			*/
+			function setTime(time) {
+				switch(time) {
+					case 'circle':
+						dayNightCircle = true;
+						directionalLight.visible = true;
+						break;
+					case 'day':
+						dayNightCircle = false;
+						directionalLight.visible = true;
+						directionalLight.position.set(0,1,0).normalize;
+						return "Praise the Sun!";
+					case 'night':
+						dayNightCircle = false;
+						directionalLight.visible = false;
+						return "Goodnight";
+				}
+			}
+
+			function getHeightData(img,scale) {
+
+				 if (scale == undefined) scale=1;
+
+					var canvas = document.createElement( 'canvas' );
+					canvas.width = img.width;
+					canvas.height = img.height;
+					var context = canvas.getContext( '2d' );
+
+					var size = img.width * img.height;
+					var data = new Float32Array( size );
+
+					context.drawImage(img,0,0);
+
+					for ( var i = 0; i < size; i ++ ) {
+						data[i] = 0
+					}
+
+					var imgd = context.getImageData(0, 0, img.width, img.height);
+					var pix = imgd.data;
+
+					var j=0;
+					for (var i = 0; i<pix.length; i +=4) {
+						var all = pix[i]+pix[i+1]+pix[i+2];
+						data[j++] = all*scale;
+				}
+
+				return data;
+			}
+
+			function getHeightForPosition(x,z)
+			{
+				var xnew = planeXVerts/planeX*x;
+				var znew = planeZVerts/planeZ*z;
+
+
+				var xnewf = math.floor(xnew);
+				var znewf = math.floor(znew);
+				/*
+				var xnewc = math.ceil(xnew);
+				var znewc =  math.ceil(znew);
+
+				xnewc = (xnewc % planeXVerts == 0) ? xnewf : xnewc;
+				znewc = (znewc % planeZVerts == 0) ? znewf : znewc;
+
+				console.log(xnew);
+				console.log(znew);
+				var X = math.matrix([[xnewf, znewf, 1], [xnewf, znewc, 1],[xnewc, znewf, 1],[xnewc, znewc, 1]]);
+				console.log(X);
+				var r = math.matrix([[heightData[xnewf*planeZVerts+znewf]],[heightData[xnewf*planeZVerts+znewc]],[heightData[xnewc*planeZVerts+znewf]],[heightData[xnewc*planeZVerts+znewc]]]);
+				console.log(r);
+				var a= math.multiply(math.multiply(math.inv(math.multiply(math.transpose(X),X)),math.transpose(X)),r);
+				height = math.multiply(math.transpose(a), math.matrix([[xnew], [znew],[1]]));
+				return height;
+				*/
+				return heightData[xnewf+planeXVerts*znewf];
+			}
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				camera.projectionMatrix.scale(new THREE.Vector3(-1, 1, 1));
+				
+				hCamera.aspect = window.innerWidth / window.innerHeight;
+				hCamera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				rendererH.setSize( window.innerWidth, window.innerHeight );
+
+				effect.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			/**
+			*	save/download uri(screenshot) through browser
+			*	(important to set preserveDrawingBuffer: true when initializing WebGLRenderer)
+			*	@param {string} uri base64 string containing the screenshot
+			*	@param {string} filename name the file gets
+			*/
+			function saveAsJPG(uri, filename) {
+				  var link = document.createElement('a');
+				  if (typeof link.download === 'string') {
+					link.href = uri;
+					link.download = filename;
+
+					//Firefox requires the link to be in the body
+					document.body.appendChild(link);
+
+					//simulate click
+					link.click();
+
+					//remove the link when done
+					document.body.removeChild(link);
+				  } else {
+					window.open(uri);
+				  }
+			}
+
+			/**
+			*	take screenshot from a given camera as .(type) file
+			*	if given a carID returns a lowRes(600x300) stereo screenshot from a dashcam corresponding to carID
+			*	(every car has its own THREE.camera)
+			*	if stereo effect is enabled returns stereo screenshot from current view(regardless if a different camera is passed)
+			*	
+			*	@param {object/int} cam THREE.Camera/carID
+			*	@param {string} type filetype of the image
+			*/
+			function takeScreenshot( cam, type='image/jpg'){
+				var temp = screenIter.toString();
+				for(var i = temp.length; i < 3; ++i) temp = "0" + temp;
+                // relies on conscientious use of parameter cam
+				if(!isNaN(cam)) {
+					// cam is carID
+					cameraController.updateCarCamera(CARS[cam], hCamera);
+					
+					// render picture
+					effectLowRes.render( scene, hCamera );
+
+					saveAsJPG( rendererHLowRes.domElement.toDataURL(type) , currentCar + "_" + temp + ".jpg" );
+				} else {
+					// cam is camera
+					if (useStereo) {
+						// render picture
+						effect.render( scene, camera );
+						saveAsJPG( renderer.domElement.toDataURL(type) , currentCar + "_" + temp + ".jpg" );
+					} else {
+						// render picture
+						rendererH.render(scene, cam);
+						saveAsJPG( rendererH.domElement.toDataURL(type) , currentCar + "_" + temp + ".jpg" );
+					}
+				}
+				screenIter++;
+			}
+
+			/**
+			*	returns base64 string of screenshot
+			*	see takeScreenshot() for information about functionality
+			*/
+			function getScreenshotAsImg(cam, type='image/jpg') {
+				if(!isNaN(cam)) {
+					cameraController.updateCarCamera(CARS[cam], hCamera);
+					effectLowRes.render( scene, hCamera );
+					return rendererHLowRes.domElement.toDataURL(type);
+				} else {
+					if (useStereo) {
+						effect.render( scene, camera );
+						return renderer.domElement.toDataURL(type);
+					} else {
+						rendererH.render(scene, cam);
+						return rendererH.domElement.toDataURL(type);
+					}
+				}
+			}
+
+			function genNegCarTrainingData( num ) {
+				generateNegativeTrainingData(num, CARS, controls);
+			}
+
+			function initCarButton( car ) {
+                //create button if not exists
+                if(!$(car)) {
+                    var button = document.createElement('button');
+                    button.id = car;
+                    button.innerHTML = car;
+                    $("buttons_cars").appendChild(button);
+                }
+
+				$( car ).addEventListener( 'click', function() {
+					if ( ! CARS[ car ].root ) {
+						loader.load( CARS[ car ].url, function( geometry ) { createScene( geometry, car ) } );
+					} else {
+						switchCar( car );
+					}
+				}, false );
+			}
+
+			function $( id ) { return document.getElementById( id ) }
+			function button_name( car, index ) { return "m_" + car  + "_" + index }
+
+			function switchCar( car ) {
+				for ( var c in CARS ) {
+
+					if ( c != car && CARS[ c ].root ) {
+						//CARS[ c ].object.visible = false;
+						CARS[ car ].object.visible = true;
+						//CARS[ c ].buttons.style.display = "none";
+
+					}
+				}
+
+
+//				CARS[ car ].buttons.style.display = "block";
+
+//				$( "car_name" ).innerHTML = CARS[ car ].name + " model";
+//				$( "car_author" ).innerHTML = CARS[ car ].author;
+
+				currentCar = car;
+                carController.setCurrentCar(currentCar);
+
+			}
+
+
+			function onDocumentMouseMove(event) {
+
+				mouseY = ( event.clientY - window.innerHeight );
+
+			}
+
+			function onKeyDown ( event ) {
+				switch ( event.keyCode ) {
+					case 80: // p
+						takeScreenshot(camera);
+						break;
+					case 76: // l
+						useStereo = !useStereo;
+						onWindowResize();
+						break;
+					case 72: // h
+						toggleHUD();
+						break;
+					case 85: // u
+						controls.enabled = !controls.enabled;
+						break;
+				}
+			}
+			//
+
+			function animate() {
+
+                if (DataModel.simulationTimeDeltaMs > 0) {
+                    setTimeout(function() {requestAnimationFrame(animate);}, DataModel.simulationTimeDeltaMs);
+                } else {
+                    requestAnimationFrame( animate );
+                }
+
+				controls.update();
+				render();
+
+			}
+
+			// Rotate an object around an axis in world space (the axis passes through the object's position)
+
+			function render() {
+				timeDelta = clock.getDelta();
+				var angle = 0.01;
+				currentCar = carController.getCurrentCar()
+				if(dayNightCircle) {
+					if(!isNaN(directionalLight.position.x) && !isNaN(directionalLight.position.z) && !isNaN(angle)) {
+						var currentX = directionalLight.position.x;
+						var currentY = directionalLight.position.y;
+						directionalLight.position.x = currentX * Math.cos(angle) - currentY * Math.sin(angle);
+						directionalLight.position.y = currentY * Math.cos(angle) + currentX * Math.sin(angle);
+
+						// ** TURN LIGHTS ON BASED ON SUN POSITION **
+						currentCarObj = carController.getCurrentCarObj();
+						if(typeof currentCarObj !== 'undefined' && currentCarObj.backLight !== null) {
+								if(directionalLight.position.y < 0) {
+									//Then its dark -> turn on the lights of the current car
+									currentCarObj.lightController.turnLightsOn(currentCarObj);
+								} else {
+									//Then its bright -> turn off the lights of the current car
+									currentCarObj.lightController.turnLightsOff(currentCarObj);
+								}
+						}
+					}
+				}
+
+				for (var car in CARS) {
+  					if (CARS.hasOwnProperty(car) && CARS[car]!=null) {
+					  	// or if (Object.prototype.hasOwnProperty.call(obj,prop)) for safety...
+						if(car==currentCar){
+							if(!controls.enabled) {
+								carController.update(timeDelta);
+								cameraController.update();
+
+								if(cameraController.getCurrentCamera() === 'birdseyeFixed') camera.rotation.set(-0.5 * Math.PI, 0.0, -Math.PI)
+								else if(cameraController.getCurrentCamera() !== 'dashCam') camera.lookAt(CARS[currentCar].position)
+								else camera.lookAt(CARS[currentCar].object.localToWorld(new THREE.Vector3( 0, 0, 500) )  )
+							}
+						}
+					}
+				}
+
+				if(!controls.enabled) {
+					if(typeof CARS == 'undefined' || Object.keys(CARS).length === undefined || CARS.length == 0) camera.lookAt(new THREE.Vector3( 90000,  50, 72000));
+				}
+
+				if(rainController.isItRaining()) {
+					rainController.simulateRain();
+				}
+
+				if (useStereo) {
+					effect.render( scene, camera );
+				}
+				else {
+					renderer.render(scene, camera);
+				}
+
+				if ( STATS_ENABLED ) stats.update();
+
+			}
+
+			function updateCarPose(x,y,z,theta)
+			{
+				currentCarObj = CARS[currentCar].object;
+
+				currentCarObj.position.x += x;
+				currentCarObj.position.y += y;
+				currentCarObj.position.z += z;
+
+				currentCarObj.rotateX(theta.x);
+				currentCarObj.rotateY(theta.y);
+				currentCarObj.rotateZ(theta.z);
+
+        		renderer.render(scene, camera)
+
+				cameraController.updateRelativeCameraPosition();
+			}
+</script>
+</body>
+</html>

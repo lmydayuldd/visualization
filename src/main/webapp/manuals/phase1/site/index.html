@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="None">
+        
+        
+        <link rel="shortcut icon" href="./img/favicon.ico">
+        <title>Visualization documentation</title>
+        <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="./css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="./css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="./css/highlight.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+	
+	<script src="./js/jquery-1.10.2.min.js"></script>
+        <script src="./js/bootstrap-3.0.3.min.js"></script>
+        <script src="./js/highlight.pack.js"></script> 
+    </head>
+
+    <body class="homepage">
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <a class="navbar-brand" href=".">Visualization documentation</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#contents-phase-1">Contents - Phase 1</a></li>
+            <li><a href="#scene-building-and-animation">Scene building and animation</a></li>
+            <li><a href="#environment">Environment</a></li>
+            <li><a href="#objects">Objects</a></li>
+            <li><a href="#car">Car</a></li>
+            <li><a href="#weather">Weather</a></li>
+            <li><a href="#lighting">Lighting</a></li>
+            <li><a href="#screenshots">Screenshots</a></li>
+            <li><a href="#communication-with-the-server">Communication with the Server</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="contents-phase-1">Contents - Phase 1</h1>
+<ol>
+<li><a href="#scene-building-and-animation">Scene building and animation</a></li>
+<li><a href="#environment">Environment</a><ul>
+<li><a href="#terrain">Terrain</a></li>
+<li><a href="#streets">Streets</a></li>
+</ul>
+</li>
+<li><a href="#objects">Objects</a><ul>
+<li><a href="#pedestrians">Pedestrians</a></li>
+<li><a href="#street-signs">Street signs</a></li>
+<li><a href="#traffic-lights">Traffic lights</a></li>
+<li><a href="#blender">Blender</a></li>
+</ul>
+</li>
+<li><a href="#car">Car</a><ul>
+<li><a href="#car-building">Car building</a></li>
+<li><a href="#car-controller">Car controller</a></li>
+</ul>
+</li>
+<li><a href="#weather">Weather</a></li>
+<li><a href="#lighting">Lighting</a><ul>
+<li><a href="#day-night-lights">Day-night lights</a></li>
+<li><a href="#car-lights">Car lights</a></li>
+</ul>
+</li>
+<li><a href="#screenshots">Screenshots</a></li>
+<li><a href="#communication-with-the-server">Communication with the Server</a><ul>
+<li><a href="#rest-services">REST services</a></li>
+<li><a href="#opening-a-websocket-and-subscription-to-events">Opening a WebSocket and subscription to events</a></li>
+<li><a href="#handling-server-data">Handling server data</a></li>
+<li><a href="#simulation-control-and-caching">Simulation control and Caching</a></li>
+</ul>
+</li>
+</ol>
+<h2 id="scene-building-and-animation">Scene building and animation</h2>
+<p>Scene building is implemented in <code>index.html</code> file. The Three.js object to be rendered are implemented along with providing some user interface (buttons, key listeners, etc.) and handling server data.</p>
+<p>Handling the server responses is done by the DataModel, but in index.html all the specific listeners have to be defined and attached to the DataModel, along with the <em>onDataProcessed</em> and <em>afterEachFrame</em> functions (if needed).</p>
+<p>Loading the environment is requested by default, when the page is loading.</p>
+<h2 id="environment">Environment</h2>
+<p>Environment section includes building the terrain- and street-map.</p>
+<h3 id="terrain">Terrain</h3>
+<p>The terrain currently is a plane map. It is built in <strong>EnvBuilder</strong> class via <em>addTerrain</em> function.</p>
+<p>The data required to build the terrain map comes from the server as <em>bounds</em> and <em>heightMap</em> data. Currently only the <em>bounds</em> data is received, therefore the bounds-handler invokes the terrain building.</p>
+<p>Future implementation should combine both the <em>bounds</em> and <em>heightMap</em> data, in order to make the terrain <em>bumpy</em>, i.e. to apply height data.</p>
+<h3 id="streets">Streets</h3>
+<p>Streets are getting build via <strong>EnvBuilder</strong> class.</p>
+<p>A handler to the <strong>DataModel</strong> must be attached in order to build streets when the map data is received on the client.</p>
+<p>The streets data comes in an array, in which each element represent a node with position (with x, y, z coordinates).</p>
+<p>In <strong>DataModel</strong> a <em>parser</em> function is attached in order to prepare the raw data to an array of <strong>THREE.Vector3</strong>. The streets then are getting build by executing <em>drawRoad</em> function of the <strong>EnvBuilder</strong>.</p>
+<p>Building the road is achieved by creating an underlying plane (white plane by default), which is wider than the road in order to provide side lines. After preparing the underlying plane the <em>drawShape</em> function is invoked to build it first and then build the road on the top of it (the underlying plane has the <strong>y</strong> coordinate value decrease with 1, in order to keep it under the road).</p>
+<p><strong>Obsolete or deprecated functions:</strong></p>
+<ul>
+<li><em>add</em> function - adding a block texture. Currently not in use, because we need an arbitrary shape texture to be added when we build the streets and a special terrain handling when we build the terrain</li>
+<li><em>drawLine</em> function - draws middle lines on the streets. Due to a huge overload of meshes, we do not use it.</li>
+</ul>
+<h2 id="objects">Objects</h2>
+<p>All our objects (except cars) are built in the <strong>MeshBuilder</strong> class. A 3D-Software called <strong>Blender</strong> was used to export the models as <em>.json</em> files, which are then loaded with a <strong>THREE.JSONLoader</strong>. More information regarding Blender is contained in the <a href="#blender">Blender</a> part.
+Currently there are <strong>27</strong> different objects, but only <strong>8</strong> are in use. To get an overview over the available objects see <em>img\textures\Blender</em> directory. </p>
+<p>The exported <em>.json</em> consists of several arrays most importantly containing the <strong>vertices</strong>, <strong>faces</strong>, <strong>materials</strong> and <strong>uvs</strong> (needed for mapping an image) of the mesh. A parameter <strong>mapType</strong> tells the <strong>MeshBuilder</strong> if an image needs to be mapped. If that's the case a <strong>THREE.TextureLoader</strong> is used to load the image and is placed according to the information in the <em>.json</em>.</p>
+<p>Additionally there is the possibility to randomize the used texture. A parameter <strong>randRange</strong> defines the number range in which a texture is chosen, but therefore the different textures have to be present and named accordingly.</p>
+<p>An object can simply be added by calling the corresponding <em>add</em> function:</p>
+<pre><code>    meshBuilder.addTree(1, { x:100, y:0, z:100 }, { x:0, y:math.pi, z:0 })
+</code></pre>
+<p>This for example places a tree with id 1 on the given position and rotation. (It should be noted that this id is saved to a specific variable <code>mesh.projectID</code>, because Three.js occupies the <code>mesh.id</code> variable with internal id's.)</p>
+<p>To access the objects later on, they get saved in an array <strong>meshArr</strong>.</p>
+<p>It's important to know that we've limited the objects for performance reasons. Change the numbers at your own discretion. They are found in the handler part of the <code>index.html</code> (signs: 200, pedestrians: 100).</p>
+<h4 id="debugging">Debugging</h4>
+<p>For testing/ debugging there exists a simple <strong>dummy</strong> object. It looks like the following, with an arrow to indicate a direction:</p>
+<p><img alt="dummy" src="./img/dummy.jpg" /></p>
+<p>Furthermore in <code>index.html</code> the <em>lineDbg</em> function can be used to draw a colored line between two points to help visualize a relation of some things.</p>
+<h3 id="pedestrians">Pedestrians</h3>
+<p>Pedestrians are not part of the initial world. They are initialized when the simulation is started. With every frame the data is processed by <code>DataModel.js</code> and passed to a handler. In there we check with the id's wether:</p>
+<ul>
+<li>the pedestrian already exists and thus update its position to the associated coordinates</li>
+<li>it doesn't exist yet and simply create a pedestrian at the position</li>
+</ul>
+<p>The initial models of the pedestrians were way too detailed which caused issues with performance. After discarding the texture mapping, that was used at first, and some remodeling (250kb &gt; 16kb) of the mesh we ended with the following basic, male pedestrian:
+(there was no time to also remodel the female pedestrian)</p>
+<p><img alt="pedestrian" src="./img/pedestrian.jpg" /></p>
+<p>(The color of some clothing is generated randomly to get some variety into the visualization)</p>
+<p>A thing that didn't work out in the span of this lab was the <strong>animation</strong> of pedestrians. Blender supports the creation of animations and there also are Three.js examples of them working. 
+But here we couldn't get it to run. This problem is not unknown and some people reported past changes to the exporter as reason.</p>
+<h3 id="street-signs">Street Signs</h3>
+<p>The collection of objects consists of <strong>20</strong> different street signs officially used in german traffic. The models are very simple. 
+The <em>.json</em> file contains the geometry and the corresponding <em>.png</em> image is mapped onto the object to give the sign it's actual meaning.</p>
+<p>A stopsign for example looks like this:</p>
+<p><img alt="stopSign" src="./img/stopSign.jpg" /></p>
+<p>Street signs are loaded with the initial environment and we decided to just place signs on intersections. In future labs this surely can be expanded.</p>
+<p>The handler taking care of the roads also handles the placement of signs. For the placement every node contains an object <strong>streetSign</strong>, like this:</p>
+<pre><code>    "streetSign":{"type":"INTERSECTION_SIGN","id":-1,"one":false,"two":true,"y1":4.9E-324,"z1":4.9E-324,"x1":4.9E-324,"y2":831.6952128664457,"signState":"INTERSECTION_SIGN","x2":1465.67280883304,"z2":0.0}}
+</code></pre>
+<p>Signs always have an <strong>id</strong> of -1, because they don't need to be accessed later on. The exact positions of the signs is computed beforehand and sent as the coordinates <strong>x1,y1,z1</strong> and <strong>x2,y2,z2</strong>. 
+The variables <strong>one</strong> and <strong>two</strong> decide if the corresponding coordinates are used and the idea is that they are related to the two lanes of a street (right and left lane). This way a street has the right sign on both sides of the intersection.</p>
+<p>In most cases this placement works acceptable, but in some cases the assortment of roads on intersections completely messes up the signs. This leaves another task open for the next lab.</p>
+<h3 id="traffic-lights">Traffic Lights</h3>
+<p>Traffic lights are basically just a different <strong>type</strong> of streetsigns. They get placed the same way but receive an <strong>id</strong> and the <strong>signState</strong> now has a meaning.</p>
+<pre><code>    {"type":"TRAFFIC_LIGHT","id":676, ... ,"signState":"TRAFFIC_LIGHT_GREEN"}}
+</code></pre>
+<p>The plan was to make the traffic lights show their actual state with different lights. Each frame was supposed to contain information about which traffic light should switch it's state based on their id. 
+The problem was that Three.js has internal limitations that affect the amount of lights (<strong>THREE.SpotLight</strong>) we can have in our visualization and it caused the shader to crash.</p>
+<p>The implementation for the lights (traffic lights/ street lamps) is therefore disabled in <code>MeshBuilder.js</code>.</p>
+<p>A possible solution for traffic lights could be to change the material of the individual "lamps" to a color with higher emission values and update the object again.
+Sadly there was not enough time to solve this problem.</p>
+<h3 id="blender">Blender</h3>
+<p><strong>!</strong> This passage contains basic information about the use of Blender. If the current objects are sufficient and no new meshes need to be added, there is no necessity for the following. <strong>!</strong></p>
+<hr />
+<p><a href="https://www.blender.org/">Blender</a> is a free, open-source 3D-Software. The models used were free templates that mostly got remodeled to be more performant (lower polygon count). 
+The <a href="https://github.com/mrdoob/three.js/tree/master/utils/exporters/blender">exporter</a> used to create the .json files was made by Mr.doob and needs to be installed as plugin to Blender.</p>
+<p>Learning Blender is sometimes compared to rocket science, but to do the basic operations you don't need much knowledge. </p>
+<ul>
+<li>Load the .blend of the template (or import other formats if supported)</li>
+<li>
+<p>(if needed change some colors)</p>
+<p><img alt="Blender" src="./img/BlenderMaterials.png" /></p>
+</li>
+<li>
+<p>if the mesh is only partially UV mapped (like our signs) the UV material name needs to contain <em>"Map"</em> or <em>"map"</em></p>
+</li>
+<li>the mesh needs to be one whole: select all parts (Shift+Rightclick) &gt; Ctrl+J</li>
+<li>
+<p>File &gt; Export &gt; Three.js (<strong>settings:</strong> </p>
+<ul>
+<li>Normals can be disabled in most cases</li>
+<li>UVs can be disabled if you don't have any image mapping</li>
+<li>enable Face Materials)</li>
+</ul>
+</li>
+</ul>
+<p>To be able to do anything beyond that (remodeling meshes/ changing UV mapping) you need basic knowledge about the software, but there are plenty of beginner tutorials out there for that.
+<br><br> </p>
+<hr />
+<h2 id="car">Car</h2>
+<p>Cars in our implementation are handled separated than other object. We have two main classes - one for building (creating) a car and one for handling its movement.</p>
+<h3 id="car-building">Car building</h3>
+<p>A <em>Car</em> is build by a <strong>CarBuilder</strong> class. In it we load predefined materials and also define several types of cars (i.e. car models and specifications).</p>
+<p>An example of building a car is as follows:</p>
+<pre><code>    carBuilder.build(1, 'veyron', 5, { x:0, y:0, z:0 }, scene)
+</code></pre>
+<p>where the <em>type</em> ('veyron') and the <em>initMaterial</em> (5) can be skipped, while the other parameters are mandatory. When the type of the car or its initial material are skipped, a random value will be assigned.</p>
+<p>The function <em>configVeyron</em> and <em>configGallardo</em> is mainly used for the purpose of manual control of car movement, which is currently removed from our code. Except for the <strong>MAX_WHEEL_ROTATION</strong> setting, which we are still using in <code>CarController.updateCarModel</code>, it won't have any effect if you adjust any other parameters in these two configuration functions.</p>
+<h3 id="car-controller">Car controller</h3>
+<p>The CarController module is responsible for calculating the car movement. There are three functions that are mainly used. They are <em>addCar</em>, <em>handleData</em> and <em>update</em>.</p>
+<h5 id="car-registering">Car registering</h5>
+<p>All car objects should be registered by calling:</p>
+<pre><code>    carController.addCar(carName, car)
+</code></pre>
+<p>The <strong>carName</strong> is an identifier of that car in <strong>CarController</strong>. The <strong>car</strong> is an instance returned by <code>CarBuilder.build</code>. This module will render all registered cars to the screen.</p>
+<h5 id="server-data-handling">Server data handling</h5>
+<p>The data frame from server will first be processed by <code>DataModel.js</code> module where the coordinate system of servers get converted into ours, the conversion contains 2 steps:</p>
+<ol>
+<li>switch <strong>y</strong> and <strong>z</strong> axis</li>
+<li>convert data unit from <strong>meter</strong> into <strong>centimeter</strong></li>
+</ol>
+<p>The processed data and a callback will then be passed into <em>handleData</em>. This handler simply store the received data for corresponding car instance. This data will be consumed when the car finished rendering previous data frame. Special case is that if the received data frame is the first one for the corresponding car, it will be used directly for calculating the attitude of that car.</p>
+<p>As for the callback, it should be called when the car reached its destination of current data frame, in order to require the next data frame from the server.</p>
+<h5 id="car-attitude-rendering">Car attitude rendering</h5>
+<p>The <em>update</em> function will be called in every frame in order to update the car attitudes.</p>
+<p>The mechanism is as followed: For each phase we consider 2 data frames received form the server, the first one contains information about the car at a start point, the second one contains the information about the car at destination. At beginning and destination, the attitude of the call will be corrected to be the same as what server told. In between we calculate the position, speed, rotation, steering... of the car and render it to the screen, 'driving' the car to its destination.</p>
+<p>The reason why we implemented it this way is that it's hard to require car information 60 times per second from the server and process it while keeping the visualization running smoothly.</p>
+<p>Normally the distance between start and destination varies from <strong>1cm</strong> to <strong>20cm</strong>, the longer this distance is, the better the movement looks. I would suggest at least <strong>200cm</strong> for a better visualization result. But also, the longer this distance is, the more inaccurate of the visualization result will be. Because the movement between 2 data frames that we visualized mainly based on client calculation, it does not guarantee that it is what really happens in the simulation. It only guarantee that the car at the beginning(start and destination) of every data frame is the exactly the same as in the simulation.</p>
+<p>The most part of car information received from the server can be applied to the car directly, only for the rotation we have to calculate it before apply to the car. But the calculation is simple, we just apply the initial orientation vector <code>(0, 1, 0)</code> to the rotation matrix received from the server as followed:</p>
+<pre><code>    var rotationMatrix = new THREE.Matrix3();
+    var matrixElements =  rotation.reduce(function(acc, val){ return acc.concat(val)}, []);
+    rotationMatrix = rotationMatrix.set.apply(rotationMatrix, matrixElements);
+    var nextOrientation = initialOrientation.applyMatrix3(rotationMatrix);
+</code></pre>
+<p>The <code>nextOrientation.y</code> contains the information we need to render the orientation of corresponding car.</p>
+<p>The calculation for each rendered frame is implemented in <em>updateCarModel</em>. One thing to be noticed: in the current code we made the speed 100x so fast than the original speed, so that human eye can notice that the car is actually moving. It can be changed in the fifth line of function <em>updateCarModel</em>, since the speed and acceleration given by the server uses <strong>second</strong> as unit, but the <strong>delta</strong> is given in <strong>millisecond</strong>, so the actual time delta should be <strong>delta/1000</strong>.</p>
+<h2 id="weather">Weather</h2>
+<p>In our implementation we have one weather state available: <strong>rain</strong>. The rain gets rendered when the <em>raining</em> flag in the current JSON frame is set to <strong>true</strong>. The corresponding <em>DataModel.RAIN_HANDLER</em> in the index.html then starts or stops the rain based on the data in the <em>raining</em> flag. This handler is set in the <em>DataModel.js</em>. The controller, which is responsible for enabling, disabling and positioning of the rain, is the <strong>RainController</strong> (RainController.js). This file consists of two important functions to start and stop the rain.</p>
+<ul>
+<li><em>startRaining(scene, carPosition)</em> -  adds the rain to the scene and changes the position of the rain to the position of the car</li>
+<li><em>stopRaining(scene)</em> - deletes the rain in the scene</li>
+</ul>
+<p>Since we don't want to render the rain for the whole scene, we limit the rendering of the rain in a 1000 x 1000 x 750 (width x length x height) box. So we need the input parameter <em>carPosition</em> in the function <em>startRaining</em> to position the rain exactly above the car.
+The boolean function <em>isItRaining()</em> helps to check if the rain is now enabled or not. This is very helpful to check whether it is possible to start or stop the rain.</p>
+<p>The rain is constructed as followed. First of all, when the application is started, the actual rain gets initialized with the <strong>init</strong> function of the RainController object in the index.html. The rain consists mainly out of one particle system. In your implementation we render <strong>1300 particles</strong> within this system. This can be adjusted using the private variable <em>particleCount</em> in the RainController. This is achieved using the following code:</p>
+<pre><code>    particles = new THREE.Geometry();
+
+    for (var i = 0; i &lt; particleCount; i++) {
+        //Raindrops above the car in 1000 x 1000 x 750 range
+        var pX = Math.random() * 2000 - 1000,
+        pY = Math.random() * 750,
+        pZ = Math.random() * 2000 - 1000;
+        var particle = new THREE.Vector3(pX, pY, pZ);
+        particle.velocity = {};
+        particle.velocity.y = 0;
+        particles.vertices.push(particle);
+    }
+
+    particleSystem = new THREE.Points(particles, material);
+</code></pre>
+<p>Because we just initialize all the particles, we set the velocity of each particle to zero. With the first three code lines in the for loop the particles are placed <strong>randomly</strong> in the particle system. All the particles correspond to one <strong>raindrop</strong>.</p>
+<p><strong>Important: The more particles get rendered, the more computational power is needed!</strong></p>
+<p>To give the raindrops some style it is necessary to apply some material to each particle.</p>
+<pre><code>    var material = new THREE.PointsMaterial({
+      color: 0xFFFFFF,
+      size: particleSize,
+      map: new THREE.TextureLoader().load(rainTexture),
+       blending: THREE.AdditiveBlending,
+       depthTest: false,
+       transparent: true
+    });
+</code></pre>
+<p>The <em>particleSize</em> is adjustable to customize the size of the rendered drops. As a texture we use the following image, so the drop looks more realistic.</p>
+<p><img alt="Screenshot" src="./img/raindrop.png" /></p>
+<p>The important functionality of the RainController is to animate the raindrops. Without the function <em>simulateRain()</em>, the randomly placed raindrops would just stay in the air without any movement. To do the animation we execute this function in the main render loop of the application.</p>
+<pre><code>    var count = particleCount;
+    while (count--) {
+      var particle = particles.vertices[count];
+      if (particle.y &lt; 0) {
+        particle.y = 750;
+        particle.velocity.y = 0;
+      }
+      particle.velocity.y -= Math.random() * .20;
+      particle.y += particle.velocity.y;
+    }
+    particles.verticesNeedUpdate = true;
+    }
+</code></pre>
+<p>This animation is mainly done by decrementing the y coordinate of the particle. When the particle is arrived at the bottom ( y coordinate lower than zero), then this particle is again rendered at the top of the particle system box. As a summary a picture of the rendered rain.</p>
+<p><img alt="Screenshot" src="./img/rain.png" /></p>
+<p><em>Above: rain simulation</em></p>
+<p><img alt="Screenshot" src="./img/rainbox.png" /></p>
+<p><em>Above: rendered particle system as a box above the car</em></p>
+<h2 id="lighting">Lighting</h2>
+<h3 id="day-night-lights">Day-night lights</h3>
+<p>A <strong>day and night circle</strong> is implemented in our system. To enable this circle the boolean value <em>dayNightCircle</em> in the index.html needs to be set to true.
+Three different light sources are set in the scene.</p>
+<ul>
+<li><strong>Ambient light</strong> - This light globally illuminates all objects in the scene equally</li>
+<li><strong>Directional light</strong> - A light that gets emitted in a specific direction</li>
+<li><strong>Hemisphere light</strong> - A light source positioned directly above the scene<pre><code>var ambient = new THREE.AmbientLight( 0xffffff, 0.2 );
+scene.add( ambient );
+
+directionalLight = new THREE.DirectionalLight( 0xffffff, 2  );
+directionalLight.position.set(0,1,1).normalize;
+scene.add( directionalLight );
+
+hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.2 );
+hemiLight.color.setHSL( 0.6, 0.75, 0.5 );
+hemiLight.groundColor.setHSL( 0.095, 0.5, 0.5 );
+hemiLight.position.set( 0, 500, 0 );
+scene.add( hemiLight );
+</code></pre>
+</li>
+</ul>
+<p>The <strong>Ambient light</strong> is used in our system to have a realistic light distribution, when the sun is disappearing. The <em>sun</em> is represented by the <strong>Directional light</strong> above the scene. During the rendering of the scene this light is rotated around the z axis to achieved the day and night circle. At some time the sun is fully hidden ( = <strong>night</strong>) and fully seen ( = <strong>day</strong>).</p>
+<h3 id="car-lights">Car lights</h3>
+<p>The lights of a car are controlled by a <strong>LightController</strong>. Each car has an own LightController attached. Additionally three different lights are related to one car, which are then controlled by the corresponding LightController. This lights are available for one car:</p>
+<ul>
+<li><strong>Front light</strong> - Two different point lights on the left and right side of the car + one cone to display the spreading of the light</li>
+<li><strong>In light</strong> - Some light in the body of the car</li>
+<li><strong>Back light</strong> - Four different point lights to represent the back light</li>
+</ul>
+<p><img alt="Screenshot" src="./img/carFrontLight.png" /></p>
+<p><em>Above: Front light of the car</em>
+<img alt="Screenshot" src="./img/carBackLight.png" /></p>
+<p><em>Above: Back light of the car</em>
+<img alt="Screenshot" src="./img/carInLight.png" /></p>
+<p><em>Above: In light of the car</em></p>
+<p>These lights are initialized at the beginning after the car is created. With the functions <em>addFrontLight</em>, <em>addBackLight</em> and <em>addInLight</em> the lights are attached to the car regarding some offset to the origin/position of the car. Additionally when the car drives, the lights are also moved by using the update functions in the LightController.</p>
+<p>We implemented two other important functions to use the light. During the <strong>night phase</strong> in the application the <strong>two inner back lights</strong>, <strong>front light</strong> and the <strong>in light</strong> are turning on. The other way around when it's day.</p>
+<p>When the car is turning left or right the corresponding attributes <strong>moveLeft</strong> and <strong>moveRight</strong> are set. Based on this value the back light is <strong>blinking</strong>.</p>
+<pre><code>    blink(car, "left");
+    blink(car, "right");
+</code></pre>
+<h2 id="screenshots">Screenshots</h2>
+<p>Our visualization involves the possibility to take screenshots.</p>
+<p>To explain the basics:</p>
+<p>A frame is calculated by a renderer who renders the scene from a given camera. </p>
+<pre><code>    renderer.render(scene, camera);
+</code></pre>
+<p>The main renderer does this the whole time in a loop to get a fluid scene. For a screenshot we simply take an additional renderer, that is set to render on an invisible canvas (to not screw up the main screen). 
+Whenever a screenshot is asked for it renders one frame on the canvas and we use the <em>.toDataURL</em> command to generate the corresponding <em>base64</em> string out of it.</p>
+<p><strong>! the renderer needs to be initialized with <em>preserveDrawingBuffer: true</em> to be able to take screenshots !</strong></p>
+<p>To accomplish our features we have two such additional renderer:</p>
+<ul>
+<li><strong><em>rendererH:</em></strong> used to make normal screenshots with window size (shortcut P)</li>
+<li><strong><em>rendererHLowRes:</em></strong> used for low res images (600x300px) which are used by computer vision group</li>
+</ul>
+<p>To both of these can be applied a <strong>THREE.StereoEffect</strong> to split the screen and show two slightly relocated views. This is important for the computer vision group. 
+They get a low res, stereo image as <em>base64</em> with every frame on which they then do their calculations on. </p>
+<p>To get the screenshot there are two functions</p>
+<pre><code>takeScreenshot( cam, type='image/jpg' );
+getScreenshotAsImg( cam, type='image/jpg' );
+</code></pre>
+<p>which are basically the same, except the first one directly downloads the <em>base64</em> string as image through the browser. The latter one returns the raw <em>base64</em> string.</p>
+<p>The parameter <strong>cam</strong> is used to pass a camera (<strong>THREE.PerspectiveCamera</strong>) from which the picture is meant to be taken. For normal screenshots this would be the current camera, through which we see the scene. </p>
+<p>It is also possible to pass the <em>id</em> of a existing car as <strong>cam</strong>. 
+In this case it will always take a low res, stereo screenshot from a dashcam-position in front of the car. This is done by moving a particular camera <em>hCamera</em> to the described position and rendering a frame through it.</p>
+<h2 id="communication-with-the-server">Communication with the Server</h2>
+<p>Server communication is implemented by using both REST services and WebSockets. We use several classes, which implement these functionalities.</p>
+<h3 id="rest-services">REST services</h3>
+<p>REST calls are able to be executed using the <strong>WebService</strong> class. It is a singleton, allowing us to make <em>HTTP</em> requests.</p>
+<p>The public interface of the class is as follows:</p>
+<ul>
+<li><em>request</em> - generic function for creating an HTTP. User should provide the method type, destination URL, parameters (data) to be sent and content type (optional). Parameters are handled as query-params, except a specific content type is set. <strong>No defensive code</strong>, therefore requesting with wrong parameters will lead to exceptions.</li>
+<li><em>get</em> - sending a <em>GET</em> request to the server.</li>
+<li><em>post</em> - sending <em>POST</em> request to the server.</li>
+</ul>
+<p>The WebSocket class takes care of parsing the responses of the calls. If no content type has been set during sending the HTTP call, then the expected server data is in JSON format. After receiving a response, it is parsed and the attached listener is invoked with the parsed data.</p>
+<p>Further public interface of this class is for working with the <em>WebSocket</em> connection.</p>
+<h3 id="opening-a-websocket-and-subscription-to-events">Opening a WebSocket and subscription to events</h3>
+<p>Opening a WebSocket connection is done in the <strong>Messaging</strong> class. We use the STOMP broker to subscribe for specific events (in- and outcoming channels).</p>
+<p>Using the <strong>WebService</strong> class we can attach listeners to specific channels (for which we have subscribed), send messages or execute commands.</p>
+<p>The WebService' interface for the WebSocket is as follows:</p>
+<ul>
+<li><em>WS_attachListener</em> - attaching a listener on the <em>onMessage</em> chanel of the WebSocket</li>
+<li><em>WS_start</em> - execute start command, i.e. request start simulation on the server</li>
+<li><em>WS_stop</em> - execute stop command - request stop simulation</li>
+<li><em>WS_nextFrame</em> - request next frame data</li>
+<li><em>WS_screenshot</em> - send a screenshot to the server</li>
+</ul>
+<p><strong>NOTE:</strong> <code>InitMessaging.js</code> is no more in use! But there is an implementation of using the <em>onCommand</em> channel, in order to send screenshots on demand of the server.</p>
+<h3 id="handling-server-data">Handling server data</h3>
+<p>Handling of the server data is implemented in the <strong>DataModel</strong> class. It is a singleton object, playing the role of a global response listener. In order to handle server data, the DataModel must be attached to an HTTP call or WebSocket channel as a listener.</p>
+<p>The DataModel keeps the parser functions for specific data type, expected to arrive in the server data. Auxiliary parsing functions are also implemented in the DataModel.</p>
+<p>The main purpose of the DataModel is to parse specific server data and execute specific handlers on server response.</p>
+<p>The public interface of the DataModel is as follows:</p>
+<ul>
+<li><em>addHandler</em> - adding a handler, for specific data type (key), to be executed when such data is available in a response of the server. <strong>NOTE</strong> that the type of data, to be handled, must be defined in the DataModel.</li>
+<li><em>onData</em> - attaching the DataModel as a global response listener. Whenever it is invoked, the DataModel will check the response data, parse it and execute the corresponding handlers (which have to be attached beforehand)</li>
+</ul>
+<p>Each attached handler is wrapped as a <em>Promise</em> object, i.e. it has to invoke <em>resolve</em> or <em>reject</em> functions in order to notify the DataModel about its state, i.e. the data has been successfully handled (resolved), or a problem has occurred (rejected).</p>
+<p>On receiving data, the DataModel checks also whether the <em>onDataProcessed</em> function is attached. This is a legacy functionality, which allows us to start rendering the scene, when we have specific data.</p>
+<h3 id="simulation-control-and-caching">Simulation control and Caching</h3>
+<p>In order to start or stop the simulation, the user have to click on the corresponding buttons, available on the screen.</p>
+<p>Handling of the continuous execution of frames is implemented in the <strong>DataModel</strong> (can be separated in another module if the control becomes more complicated).</p>
+<p>To make the simulation smooth, we implemented caching functionality in the DataModel. The way the simulation runs is as follows:</p>
+<ol>
+<li>When the user has started the simulation, the DataModel asks for the first frame data.</li>
+<li>On server response, the DataModel checks whether a cached frame data is available<ul>
+<li>if no previous frame is cached, then current data is cached</li>
+<li>otherwise the attached handlers are invoked with the cached data, and the current one is getting cached.</li>
+<li>_In any case, the DataModel asks for the next data frame</li>
+</ul>
+</li>
+<li>Step 2 is repeated until the user stops the simulation or the server returns <code>null</code> data.</li>
+</ol>
+<p>When a server response arrives, the DataModel checks for available handlers and executes them. If all of the handlers have responded with <em>resolved</em> status, the data has been handled correctly and the <em>afterEachFrame</em> function can be executed (if attached beforehand). If at least one of the handlers fails to fulfill (i.e. call <em>resolve</em>), after a specific timeout or if <em>reject</em> has been called, a error handler will be executed. Since an error handler is not implemented currently, the simulation will continue as described above, but <em>afterEachFrame</em> function will not be called.</p>
+<p><em>afterEachFrame</em> function is in the public interface of the DataModel. One can attach such function to be executed every time a frame data has been handled. In our implementation we use it to send screenshots to the server, every time we have successfully rendered a frame data.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>var base_url = '.';</script>
+        <script data-main="./mkdocs/js/search.js" src="./mkdocs/js/require.js"></script>
+        <script src="./js/base.js"></script><div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 0.16.2
+Build Date UTC : 2017-03-29 14:37:01
+-->
