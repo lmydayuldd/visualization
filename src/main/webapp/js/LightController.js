@@ -29,6 +29,17 @@ function LightController() {
 						}
 	};
 
+	let dayLight = {
+		  intensity_side: 80,
+			intensity_cone: 20,
+			cone:   { offset_x: SCALE * 0, offset_y: SCALE * 25,  offset_z: SCALE * 58,
+			target: { offset_x: SCALE * 0, offset_y: SCALE * -8,  offset_z: SCALE * 125 }
+						},
+			side: { left:  { offset_x: SCALE * -42, offset_y : SCALE * 38, offset_z : SCALE * 117 },
+					right: { offset_x: SCALE * 42,  offset_y : SCALE * 38, offset_z : SCALE * 117 }
+						}
+	};
+
 	let backLight = {
 			intensity: 80,
 			right: { left: { offset_x: SCALE * -23, offset_y: SCALE * 49, offset_z: SCALE * -123 },
@@ -166,6 +177,29 @@ function LightController() {
 
 	}
 
+	this.addDayLight = function(car) {
+		var position_x = car.mesh.position.x;
+		var position_y = car.mesh.position.y;
+		var position_z = car.mesh.position.z;
+
+		//add cone for the frontlight
+		var cone = new THREE.SpotLight(0xffffff, 0, 400, 7*Math.PI/24, 0.5, 2);
+		cone.position.set(position_x, position_y + dayLight.cone.offset_y, position_z + dayLight.cone.offset_z);
+		cone.target.position.set(position_x, position_y + dayLight.cone.target_offset_y, position_z + dayLight.cone.target_offset_z);
+		scene.add(cone.target);
+		scene.add(cone);
+
+		//add two side frontlights for the car
+		var leftlight = new THREE.PointLight( 0xffffff, 0, 5, 2 );
+		leftlight.position.set( position_x + dayLight.side.left.offset_x , position_y - dayLight.side.left.offset_y, position_z + dayLight.side.left.offset_z );
+		scene.add( leftlight );
+		var rightlight = new THREE.PointLight( 0xffffff, 0, 5, 2 );
+		rightlight.position.set( position_x + dayLight.side.right.offset_x, position_y - dayLight.side.right.offset_y, position_z + dayLight.side.right.offset_z );
+		scene.add( rightlight );
+
+		car.dayLight = { cone: cone, left: leftlight, right: rightlight};
+	}
+
 	/**
 	*   Updates the position of the frontlight of the car
 	*
@@ -195,6 +229,30 @@ function LightController() {
 		car.frontLight.left.position.set(new_leftLight.x , new_leftLight.y, new_leftLight.z);
 		car.frontLight.right.position.set(new_rightLight.x , new_rightLight.y, new_rightLight.z);
 
+	}
+
+	this.updateDayLight = function(car) {
+		var rotation = car.mesh.rotation.y;
+
+		/* UPDATE CONE LIGHT */
+		var lightStandard = calcStandardPosition(car, dayLight.cone);
+		var targetStandard = calcStandardPosition(car, dayLight.cone.target);
+
+		var new_light = calcRotatedPosition(car, rotation, lightStandard);
+		var new_target = calcRotatedPosition(car, rotation, targetStandard);
+
+		car.dayLight.cone.position.set(new_light.x , new_light.y, new_light.z);
+		car.dayLight.cone.target.position.set(new_target.x, new_target.y, new_target.z);
+
+		/* UPDATE LEFT AND RIGHT LIGHT */
+		var leftLightStandard = calcStandardPosition(car, dayLight.side.left);
+		var rightLightStandard = calcStandardPosition(car, dayLight.side.right);
+
+		var new_leftLight = calcRotatedPosition(car, rotation, leftLightStandard);
+		var new_rightLight = calcRotatedPosition(car, rotation, rightLightStandard);
+
+		car.dayLight.left.position.set(new_leftLight.x , new_leftLight.y, new_leftLight.z);
+		car.dayLight.right.position.set(new_rightLight.x , new_rightLight.y, new_rightLight.z);
 	}
 
 	/**
@@ -286,6 +344,10 @@ function LightController() {
 		car.frontLight.left.intensity = frontLight.intensity_side;
 		car.frontLight.right.intensity = frontLight.intensity_side;
 		car.frontLight.cone.intensity = frontLight.intensity_cone;
+
+		car.dayLight.left.intensity = 0;
+		car.dayLight.right.intensity = 0;
+		car.dayLight.cone.intensity = 0;
 	}
 
 	/**
@@ -308,6 +370,10 @@ function LightController() {
 		car.frontLight.left.intensity = 0;
 		car.frontLight.right.intensity = 0;
 		car.frontLight.cone.intensity = 0;
+
+		car.dayLight.left.intensity = dayLight.intensity_side;
+		car.dayLight.right.intensity = dayLight.intensity_side;
+		car.dayLight.cone.intensity = dayLight.intensity_cone;
 	}
 
 	/**

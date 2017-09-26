@@ -266,7 +266,6 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
         // Temporarily disable pedestrians
         /*
         List<Pedestrian> pedestrians = WorldModel.getInstance().getPedestrianContainer().getPedestrians();
-        logger.info(pedestrians.size() + " pedestrians found and resiter them to Simulator...");
         for (Pedestrian pedestrian : pedestrians) {
             sim.registerSimulationObject(pedestrian);
         }

@@ -250,10 +250,12 @@ function CarController() {
         //add lights to car if not exists
         if(car.frontLight == null) {
           car.lightController.addFrontLight(car);
+          car.lightController.addDayLight(car);
           car.lightController.addBackLight(car);
           car.lightController.addInLight(car);
         }
         car.lightController.updateFrontLight(car);
+        car.lightController.updateDayLight(car);
         car.lightController.updateBackLight(car);
         car.lightController.updateInLight(car);
 
