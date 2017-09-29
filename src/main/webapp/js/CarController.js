@@ -27,6 +27,7 @@ function CarController() {
             },
             lightController: new LightController(),
             frontLight: null,
+            dayLight: null,
             backLight: null,
             inLight: null,
             dataBuffer: null,

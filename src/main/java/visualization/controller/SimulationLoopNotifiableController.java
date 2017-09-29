@@ -295,16 +295,19 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
 
     private void setupAllVehicles() {
 
+        // TODO: This should be changed to loading data from files (see SimulatorMain as well)
         // Load simulation cases
         PhysicalVehicle physicalVehicle = null;
 
         // Position: Bus stop Ahornstrasse in front of Informatikzentrum
         // End Position: Bus stop named Melatener Strasse on Halifaxstrasse with OSM Id 1223037297
+        /*
         physicalVehicle = setupDefaultVehicle();
         sim.registerAndPutObject(physicalVehicle, 1584.31626412008, 877.404690000371, 0.5 * Math.PI);
         physicalVehicle.getSimulationVehicle().navigateTo(new Node2D(1593.322563254177, 591.3829242001566, 0.0, 1223037297));
         sim.setSimulationLoopFrequency(50);
         sim.stopAfter(60 * 1000);
+        */
 
         // Position: Nordhoffstrasse
         // End Position: Intersection Siemensstrasse and Ahornstrasse
@@ -356,7 +359,6 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
         // Simulation scenario: Priority to Right
         // Spawn four vehicles on intersection Pauwelsstrasse / Forckenbeckstrasse / Parking lot access
         // to create a right before left priority situation - without priority mechanisms they all meet at the same time at intersection
-        /*
         physicalVehicle = setupDefaultVehicle();
         Simulator.getSharedInstance().registerAndPutObject(physicalVehicle, 966.6905532033019, 498.1714592002669, 0.8 * Math.PI);
         physicalVehicle.getSimulationVehicle().navigateTo(new Node2D(907.8272188834519, 414.3760650003208, 0.0, 2571073071L));
@@ -371,7 +373,6 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
         physicalVehicle.getSimulationVehicle().navigateTo(new Node2D(987.3084859322336, 419.83842059972903, 0.0, 1374074086));
         sim.setSimulationLoopFrequency(30);
         sim.stopAfter(90 * 1000);
-        */
 
         // Simulation scenario: Traffic optimization
         // Spawn one driving vehicle from Nordhoffstrasse to crossing Melatener Weg / Melatener Strasse
