@@ -881,7 +881,7 @@
 								carController.update(timeDelta);
 								cameraController.update();
 
-								if(cameraController.getCurrentCamera() === 'birdseyeFixed') camera.rotation.set(-0.5 * Math.PI, 0.0, -Math.PI)
+								if(cameraController.getCurrentCamera().startsWith("birdseye")) camera.rotation.set(-0.5 * Math.PI, 0.0, -Math.PI)
 								else if(cameraController.getCurrentCamera() !== 'dashCam') camera.lookAt(CARS[currentCar].position)
 								else camera.lookAt(CARS[currentCar].object.localToWorld(new THREE.Vector3( 0, 0, 500) )  )
 							}

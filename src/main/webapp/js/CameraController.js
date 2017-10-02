@@ -11,6 +11,7 @@ function CameraController (CAMERA) {
         sideRight:      { x: SCALE * -208,  y: SCALE * 92,  z: SCALE * 0 },
         backward:       { x: SCALE * 0,     y: SCALE * 92,  z: SCALE * 233 },
         birdseyeFixed:  { x: SCALE * 0,     y: SCALE * 583, z: SCALE * 0 },
+        birdseyeHigh:   { x: SCALE * 0,     y: SCALE * 3500, z: SCALE * 0 },
         dashCam:        { x: SCALE * 0,     y: SCALE * 75,  z: SCALE * 83 }
     };
 
@@ -39,7 +40,7 @@ function CameraController (CAMERA) {
 
         CAMERA.position.set(worldPos.x, worldPos.y, worldPos.z)
 
-        if (cameraLabel == "birdseyeFixed") {
+        if (cameraLabel.startsWith("birdseye")) {
             CAMERA.rotation.set(-0.5 * Math.PI, 0.0, -Math.PI);
             currentCamera = cameraLabel;
             return;
