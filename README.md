@@ -1,3 +1,5 @@
+<a href="https://codeclimate.com/github/MontiSim/visualization/maintainability"><img src="https://api.codeclimate.com/v1/badges/3357d170e5a3cc2ea748/maintainability" /></a>
+
 # Visualization
 The visualization project uses WebGL and Three.JS to illustrate the data from the simulation in a web browser.
 
