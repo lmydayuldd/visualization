@@ -1,4 +1,4 @@
-<a href="https://codeclimate.com/github/MontiSim/visualization/maintainability"><img src="https://api.codeclimate.com/v1/badges/3357d170e5a3cc2ea748/maintainability" /></a>
+<a href="https://codeclimate.com/github/MontiSim/visualization/maintainability"><img src="https://api.codeclimate.com/v1/badges/3357d170e5a3cc2ea748/maintainability" /></a>   [![Build Status](https://travis-ci.org/MontiSim/visualization.svg?branch=master)](https://travis-ci.org/MontiSim/visualization)   [![Coverage Status](https://coveralls.io/repos/github/MontiSim/visualization/badge.svg?branch=master)](https://coveralls.io/github/MontiSim/visualization?branch=master)
 
 # Visualization
 The visualization project uses WebGL and Three.JS to illustrate the data from the simulation in a web browser.
