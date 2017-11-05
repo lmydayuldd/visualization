@@ -18,6 +18,8 @@ function EnvBuilder(loader, scene) {
         asphalt: TEXTURES_DIR + "Street/asphalt.jpg",
         terrain: TEXTURES_DIR + "Grass/texture_grass.jpg",
     }
+    
+    let OBJECTS = [];
 
 
     /**
@@ -66,6 +68,7 @@ function EnvBuilder(loader, scene) {
         if(shadow) mesh.receiveShadow = true;
 
         scene.add( mesh );
+        OBJECTS.push(mesh);
     }
 
     //detect direction between 2 nodes - direction on X or Z (left/right or forward/backward)
@@ -84,6 +87,12 @@ function EnvBuilder(loader, scene) {
     }
 
     var self = {
+        /**
+        * Removes all objects, added to the scene until this moment
+        */
+        clear: function clear() {
+            for(let i=0; i<OBJECTS.length; ++i) scene.remove(OBJECTS[i]);
+        },
         //generic add
         add: add,
 
@@ -123,6 +132,7 @@ function EnvBuilder(loader, scene) {
             mesh.rotation.x = -Math.PI/2;
             mesh.receiveShadow = false;
             scene.add(mesh);
+            OBJECTS.push(mesh);
 
             return self;
         },
@@ -211,6 +221,7 @@ function EnvBuilder(loader, scene) {
             }
             
             scene.add(mesh);
+            OBJECTS.push(mesh);
 
             return self;
         },

@@ -18,6 +18,8 @@ function MeshBuilder(jsonLoader, tgaLoader, scene, meshArr) {
 		streetLamp: {x:80, y:195, z:0, xt:80, yt:0, zt:0},
 		trafficLight: {x:0, y:189, z:25, xt:0, yt:189, zt:0}
 	};
+    
+    let OBJECTS = [];
 	
 	/**
 	*	add mesh to scene.
@@ -82,6 +84,8 @@ function MeshBuilder(jsonLoader, tgaLoader, scene, meshArr) {
 			
 			// add mesh to scene and array
 			scene.add(mesh);
+            OBJECTS.push(mesh); //keep reference of the mesh, so we can clean up the scene if needed
+            
 			mesh.name = type;
 			// THREE JS distributes its own id's all over the place, so we need other straight forward ones
 			mesh.projectID = id;
@@ -210,6 +214,12 @@ function MeshBuilder(jsonLoader, tgaLoader, scene, meshArr) {
 	}
 	
 	var self = {
+        /**
+        * Removes all objects, added to the scene until this moment
+        */
+        clear: function clear() {
+            for(let i=0; i<OBJECTS.length; ++i) scene.remove(OBJECTS[i]);
+        },
 		/**
         *   toggle or set visibility for all meshes.
 		*

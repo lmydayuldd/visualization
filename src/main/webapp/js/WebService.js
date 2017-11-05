@@ -66,10 +66,10 @@ const WebService = (function WebService() {
             req.send(data);
         });
     }
-
-    //WebSocket connection
-    const WS = window.montiarc.messaging.messagingClient;
+    
+    //simulation state and mandatory listener
     var SIM_RUNNING = false;
+    let onNextFrame = null;
 
     return {
         //generic request
@@ -82,13 +82,17 @@ const WebService = (function WebService() {
         post: function post(URL, params, contentType) {
             return request('POST', URL, params, contentType);
         },
-        //WebSockets commands
-        WS_attachListener: function WSattachListener(listener) { WS.onMessage(listener); },
+        //SFS WebSockets commands
+        WS_login: function (user, pass, onSuccess, onError) { Server.login(user, pass, onSuccess, onError); },
+        WS_logout: function (callback) { Server.logout(callback); },
+        
+        
+        //legacy
+        WS_attachListener: function WSattachListener(listener) { onNextFrame = listener; },
 
-        WS_start: function () { WS.start(); SIM_RUNNING = true; },
-        WS_stop: function () { WS.stop(); SIM_RUNNING = false; },
+        WS_start: function () { Server.start(); SIM_RUNNING = true; },
+        WS_stop: function () { Server.stop(); SIM_RUNNING = false; },
 
-        WS_nextFrame: function () { if(SIM_RUNNING) WS.requestNextFrame(); },
-        WS_screenshot: function (ss) { if(SIM_RUNNING) WS.sendScreenshot(ss); }
+        WS_nextFrame: function () { if(SIM_RUNNING) Server.nextFrame(onNextFrame); }
     }
 })();

@@ -213,6 +213,9 @@
 			var LS_flag = true;
 
 			var stereoCameraBaseline = 2;
+            
+            var ENV_BUILDER = null;
+            var MESH_BUILDER = null;
 
 			init();
 
@@ -268,6 +271,9 @@
 				//Add fog
 				//scene.fog = new THREE.Fog( 0x808080, 2500, 8000 );
 				scene.background = textureCube; //Fog does not work with background!
+                
+                var ENV_BUILDER = new EnvBuilder(tgaLoader, scene);
+                var MESH_BUILDER = new MeshBuilder(jsonLoader, tgaLoader, scene, meshArr);
 
 				var carBuilder = new CarBuilder(textureCube);
 
@@ -334,29 +340,31 @@
 				//ATTACH DATA HANDLERS
 				//environment
 				DataModel.addHandler(DataModel.STREETS_HANDLER, function streetsHandler(data, resolve, reject) {
-					var eb = new EnvBuilder(tgaLoader, scene);
-					var mb = new MeshBuilder(jsonLoader, tgaLoader, scene, meshArr);
+                    //clear environment before building up the new one.
+                    //It is IMPORTANT, that this handler is executed before any other (first added in DataModel handlers), otherwise the new environment might not be build completely
+                    ENV_BUILDER.clear();
+                    MESH_BUILDER.clear();
+                    
 					var prevNode;
 					for(var i=0; i<data.length; ++i) {
 						//nodes for streets and signs
 						for(var n=0; n<data[i].nodes.length; ++n) {
 							var node = data[i].nodes[n];
 							if(LS_Meshcounter < 200) {
-								meshHelper(mb, node, prevNode);
+								meshHelper(MESH_BUILDER, node, prevNode);
 							}
 							prevNode = {x: node.x, z: node.z};
 
 							data[i].nodes[n] = new THREE.Vector3(node.x, node.y, node.z);
 						}
-						eb.drawRoad(data[i].nodes, data[i].streetWidth);
+						ENV_BUILDER.drawRoad(data[i].nodes, data[i].streetWidth);
 					}
           			resolve();
 				});
 
 				//map bounds (terrain)
 				DataModel.addHandler(DataModel.BOUNDS_HANDLER, function terrainHandler(data, resolve, reject) {
-					var eb = new EnvBuilder(tgaLoader, scene);
-					eb.addTerrain(data);
+					ENV_BUILDER.addTerrain(data);
 					resolve();
 				});
 
@@ -408,7 +416,6 @@
 
 				//pedestrians
 				DataModel.addHandler(DataModel.PEDESTRIANS_HANDLER, function pedestriansHandler(data, resolve, reject) {
-					var mb = new MeshBuilder(jsonLoader, tgaLoader, scene, meshArr);
 					for(var i = 0; i < data.length; ++i) {
                         var pedestrianExists = false;
 							for(var p in meshArr.pedestrians)
@@ -435,7 +442,7 @@
                             // Update position
                             meshArr.pedestrians[p].position.set( data[i].position.x, data[i].position.y, data[i].position.z );
                         }else {
-                            mb.addArnold(data[i].id, {x: data[i].position.x, y: data[i].position.y, z:data[i].position.z});
+                            MESH_BUILDER.addArnold(data[i].id, {x: data[i].position.x, y: data[i].position.y, z:data[i].position.z});
                         }
 					}
 					resolve();
