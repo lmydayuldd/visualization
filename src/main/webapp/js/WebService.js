@@ -86,6 +86,8 @@ const WebService = (function WebService() {
         WS_login: function (user, pass, onSuccess, onError) { Server.login(user, pass, onSuccess, onError); },
         WS_logout: function (callback) { Server.logout(callback); },
         
+        WS_getScenarios: function (callback) { Server.getScenarios(callback); },
+        WS_loadScenario: function (scenario, callback) { Server.loadScenario(scenario, callback); },
         
         //legacy
         WS_attachListener: function WSattachListener(listener) { onNextFrame = listener; },
