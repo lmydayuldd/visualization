@@ -5,140 +5,16 @@
 		<title>MontiSim Visualization</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link rel="stylesheet" href="fontawesome/css/font-awesome.min.css">
-		<style>
-			body {
-				background:#000;
-				color:#fff;
-				padding:0;
-				margin:0;
-				overflow:hidden;
-				font-family:Monospace;
-				text-align:center;
-			}
-			h1 { }
-			a { color:skyblue; text-decoration:none }
-			canvas { pointer-events:none; z-index:10; position:relative; }
-
-			#d { position:absolute; width: 100%; text-align:center; margin:1em 0 -4.5em 0; z-index:1000; }
-
-			.bwrap { margin:0.5em 0 0 0 }
-			button { font-family:georgia; border:0; background:#000; color:#fff; padding:0.2em 0.5em; cursor:pointer; border-radius:3px; }
-			button:hover { background:#333 }
-			#buttons_cars button { color:#fa0; }
-
-			#car_info { text-align:center; }
-			#car_name { font-size:1em }
-			#car_author { font-size:1em }
-
-			#oldie { background:rgb(50,0,0) !important; color:#fff !important; margin-top:7em!important }
-
-			.lbl { color:#fff; font-size:14px; font-weight:bold; position: absolute; z-index:100; text-shadow:#000 1px 1px 1px; background-color:rgba(0,0,0,0.85); padding:1em }
-			#lbl1 { right:0px; background-color:#FF0000 }
-			#lbl2 { text-align:left; bottom:0px; right:0px }
-
-			#footer {
-		    position: fixed;
-		    bottom: 0;
-		    width: 100%;
-			}
-		#stacked {
-			display:block;
-			margin: auto;
-		}
-			#Up {
-				margin-bottom: 30px;
-				font-size: 40px;
-				border-radius: 10px;
-				border-color: grey;
-				border: 2px solid #73AD21;
-				background-color: grey;
-			}
-			#Down {
-				font-size: 40px;
-				border-radius: 10px;
-				border-color: grey;
-				border: 2px solid #73AD21;
-				background-color: grey;
-			}
-			#Left {
-				font-size: 40px;
-				margin-right: 30px;
-				border-radius: 10px;
-				border-color: grey;
-				border: 2px solid #73AD21;
-				background-color: grey;
-			}
-			#Right {
-				font-size: 40px;
-				margin-left: 30px;
-				border-radius: 10px;
-				border: 2px solid #73AD21;
-				background-color: grey;
-			}
-
-			.big-btn {
-        width: 90px;
-        height: 70px;
-    }
-
-
-    	#Up.active, #Down.active, #Left.active, #Right.active { background-color: black; }
-		</style>
-
-		<script src="build/sockjs/sockjs-1.1.1.js"></script>
-		<script src="build/stomp/stomp-1.7.1.js"></script>
-		<script src="js/Messaging.js"></script>
-		<script type="text/javascript" src="utils/fileHelper/FileSaver.js"></script>
-
-	</head>
-
-	<body>
-		<div id="lbl1" class="lbl">
-				<button id="startSimulation" onclick="onStartClick(); WebService.WS_start(); WebService.WS_nextFrame()">Start</button>
-				<button id="stopSimulation" onclick="WebService.WS_stop()">Stop</button>
-		</div>
-
-		<div id="d">
-			<div id="buttons_cars"></div>
-			<div id="footer">
-				<div id="stacked">
-					<div>
-						<button id="Up" class="big-btn"><i class="fa fa-arrow-up fa-lg" style="font-size: 30px" aria-hidden="true">W</i></button>
-					</div>
-					<div>
-						<button id="Left" class="big-btn"><i class="fa fa-arrow-left fa-lg" style="font-size: 30px" aria-hidden="true">A</i></button>
-						<button id="Down" class="big-btn"><i class="fa fa-arrow-down fa-lg" style="font-size: 30px" aria-hidden="true">S</i>
-						</button>
-						<button id="Right" class="big-btn"><i class="fa fa-arrow-right fa-lg" style="font-size: 30px" aria-hidden="true">D</i></button>
-					</div>
-				</div>
-			</div>
-
-		</div>
-
-		<div id="lbl2" class="lbl">
-			Controls: <br />
-			c - change Camera<br />
-			u - Orbit Control<br />
-			p - Screenshot<br />
-			h - toggle HUD<br />
-			l - use Stereo
-		</div>
-
-		<canvas id="hiddenCanvas"></canvas>
-		<canvas id="hiddenCanvasLowRes"></canvas>
-
-
-		<script src="build/three.js"></script>
-
+		<link rel="stylesheet" href="fontawesome/css/font-awesome.min.css"/>
+		<link rel="stylesheet" href="main.css"/>
+        
+        <script src="build/three.js"></script>
+        
 		<script src="examples/js/loaders/BinaryLoader.js"></script>
-
 		<script src="examples/js/Detector.js"></script>
 		<script src="examples/js/libs/stats.min.js"></script>
 		<script src="examples/js/Car.js"></script>
 		<script src="js/math.min.js"></script>
-		<!-- <script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/OrbitControls.js"></script> -->
 		<script src="js/three.orbitcontrols.js"></script>
 
         <!-- Dependencies -->
@@ -159,10 +35,60 @@
         <script src="js/Materials.js"></script>
         <script src="js/CarBuilder.js"></script>
 
+        <!--    SFS2X    -->
+        <script src="js/sfs2x-api-1.7.6.js"></script>
+        
+        <script src="js/Server.js"></script>
 		<script src="js/WebService.js"></script>
 		<script src="js/DataModel.js"></script>
+        <!--    HTML components    -->
+        <script src="js/NavBar.js"></script>
 
-		<script>
+	</head>
+
+	<body>
+<!--
+		<div id="lbl1" class="lbl">
+				<button id="startSimulation" onclick="onStartClick(); WebService.WS_start(); WebService.WS_nextFrame()">Start</button>
+				<button id="stopSimulation" onclick="WebService.WS_stop()">Stop</button>
+		</div>
+-->
+
+<!--
+		<div id="d">
+			<div id="buttons_cars"></div>
+			<div id="footer">
+				<div id="stacked">
+					<div>
+						<button id="Up" class="big-btn"><i class="fa fa-arrow-up fa-lg" style="font-size: 30px" aria-hidden="true">W</i></button>
+					</div>
+					<div>
+						<button id="Left" class="big-btn"><i class="fa fa-arrow-left fa-lg" style="font-size: 30px" aria-hidden="true">A</i></button>
+						<button id="Down" class="big-btn"><i class="fa fa-arrow-down fa-lg" style="font-size: 30px" aria-hidden="true">S</i>
+						</button>
+						<button id="Right" class="big-btn"><i class="fa fa-arrow-right fa-lg" style="font-size: 30px" aria-hidden="true">D</i></button>
+					</div>
+				</div>
+			</div>
+		</div>
+-->
+
+		<div id="lbl2" class="lbl">
+			Controls: <br />
+			c - change Camera<br />
+			u - Orbit Control<br />
+			p - Screenshot<br />
+			h - toggle HUD<br />
+			l - use Stereo
+		</div>
+
+		<canvas id="hiddenCanvas"></canvas>
+		<canvas id="hiddenCanvasLowRes"></canvas>
+        
+        <!--    Controls    -->
+        <div id="nav-menu"><!-- Dynamic DropDown here --></div>
+
+        <script>
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var STATS_ENABLED = false;
@@ -216,11 +142,12 @@
             
             var ENV_BUILDER = null;
             var MESH_BUILDER = null;
+            
+            var SIMULATED_CARS = [];
 
 			init();
 
 			function init() {
-
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
@@ -480,9 +407,86 @@
 
 				//attach DataModel to WebSocket connection
 				WebService.WS_attachListener(DataModel.onData);
+                
+                
+                //==========================================================================
+                //prepare server callbacks
+                let initNav = function initNav() {
+                    new NavBar([
+                        {
+                            text: 'login',
+                            clas: 'fa fa-user-circle',
+                            onClick: function () {
+                                //login (as guest)
+                                WebService.WS_login(null, null, function onSuccess() { //FIXME login does not work !!!
+                                    //fetch scenarios when user is logged in
+                                    WebService.WS_getScenarios(onScenariousReady);
+                                });
+                            }
+                        }
+                    ], document.getElementById("nav-menu"), true);
+                }
+                
+                let onScenarioLoaded = function onScenarioLoaded() {
+                    //update controls
+                    new NavBar([
+                        {
+                            text: 'Vehicles',
+                            clas: 'fa fa-car',
+                            items: SIMULATED_CARS
+                        },
+                        {
+                            text: 'Pause / Play',
+                            clas: 'fa fa-pause',
+                            onClick: function togglePlay() {
+                                if(WebService.WS_isSimRunning()) WebService.WS_stop();
+                                else WebService.WS_start();
+                            }
+                        },
+                        {
+                            text: 'Stop',
+                            clas: 'fa fa-stop',
+                            onClick: onStopClicked
+                        }
+                    ], document.getElementById("nav-menu"), true);
+                }
+                
+                let onScenariosReady = function onScenariousReady(scenarios) {
+                    //prepare scenarios as dropdown data
+                    let scenArr = [];
+                    for(let i=0; i<scenarios.length; ++i) {
+                        scenArr.push({
+                            text: scenarios[i].name + "(" + senarios[i].tracks + ")",
+                            onClick: function loadScenario() { //TODO test if i changes (reference issue ?)
+                                WebService.WS_loadScenario(scenarios[i].id, onScenarioLoaed);
+                            }
+                         });
+                    }
+                    
+                    //update controls
+                    new NavBar([
+                        {
+                            text: 'Scenarios',
+                            clas: 'fa fa-file-text',
+                            items: scenArr
+                        },
+                        {
+                            text: 'Logout',
+                            clas: 'fa fa-window-close',
+                            onClick: function logout() {
+                                WebService.WS_logout(initNav);
+                            }
+                        }
+                    ], document.getElementById("nav-menu"), true);
+                }
+                
+                //init NavBar
+                initNav();
+                
+               
 
                 //load environment data from server
-                WebService.get('/web-app/env/world').then(DataModel.onData);
+//                WebService.get('/web-app/env/world').then(DataModel.onData);
 
 				//==========================================================================
 
@@ -562,7 +566,18 @@
 			function onStartClick() {
 				// Disable orbit controls
 				controls.enabled = false;
+                
+                WebService.WS_start();
+                WebService.WS_nextFrame();
 			}
+            function onStopClicked() {
+                //stop simulation
+                WebService.WS_stop();
+                //clear up car information for previous simulation
+                SIMULATED_CARS = [];
+                //fetch scenarios again and build navigation bar
+                WebService.WS_getScenarios(onScenariousReady);
+            }
 
 			/**
 			*	toggle some HUD elements
@@ -772,21 +787,24 @@
 			}
 
 			function initCarButton( car ) {
-                //create button if not exists
-                if(!$(car)) {
-                    var button = document.createElement('button');
-                    button.id = car;
-                    button.innerHTML = car;
-                    $("buttons_cars").appendChild(button);
-                }
-
-				$( car ).addEventListener( 'click', function() {
+                
+                let onCarSelected = function onCarSelected(car) {              
 					if ( ! CARS[ car ].root ) {
 						loader.load( CARS[ car ].url, function( geometry ) { createScene( geometry, car ) } );
 					} else {
 						switchCar( car );
 					}
-				}, false );
+				}
+                
+                //create button if not exists
+                if(!$(car)) {
+                    SIMULATED_CARS.push({
+                        text: car,
+                        onClick: function () {
+                            onCarSelected(car);
+                        }
+                    });
+                }
 			}
 
 			function $( id ) { return document.getElementById( id ) }

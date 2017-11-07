@@ -1,0 +1,203 @@
+body {
+    background:#000;
+    color:#fff;
+    padding:0;
+    margin:0;
+    overflow:hidden;
+    font-family:Monospace;
+    text-align:center;
+}
+h1 { }
+a { color:skyblue; text-decoration:none }
+canvas { pointer-events:none; z-index:10; position:relative; }
+
+#d { position:absolute; width: 100%; text-align:center; margin:1em 0 -4.5em 0; z-index:1000; }
+
+.bwrap { margin:0.5em 0 0 0 }
+button { font-family:georgia; border:0; background:#000; color:#fff; padding:0.2em 0.5em; cursor:pointer; border-radius:3px; }
+button:hover { background:#333 }
+#buttons_cars button { color:#fa0; }
+
+#car_info { text-align:center; }
+#car_name { font-size:1em }
+#car_author { font-size:1em }
+
+#oldie { background:rgb(50,0,0) !important; color:#fff !important; margin-top:7em!important }
+
+.lbl { color:#fff; font-size:14px; font-weight:bold; position: absolute; z-index:100; text-shadow:#000 1px 1px 1px; background-color:rgba(0,0,0,0.85); padding:1em }
+#lbl1 { right:0px; background-color:#FF0000 }
+#lbl2 { text-align:left; bottom:0px; right:0px }
+
+#footer {
+position: fixed;
+bottom: 0;
+width: 100%;
+}
+#stacked {
+    display:block;
+    margin: auto;
+}
+#Up {
+    margin-bottom: 30px;
+    font-size: 40px;
+    border-radius: 10px;
+    border-color: grey;
+    border: 2px solid #73AD21;
+    background-color: grey;
+}
+#Down {
+    font-size: 40px;
+    border-radius: 10px;
+    border-color: grey;
+    border: 2px solid #73AD21;
+    background-color: grey;
+}
+#Left {
+    font-size: 40px;
+    margin-right: 30px;
+    border-radius: 10px;
+    border-color: grey;
+    border: 2px solid #73AD21;
+    background-color: grey;
+}
+#Right {
+    font-size: 40px;
+    margin-left: 30px;
+    border-radius: 10px;
+    border: 2px solid #73AD21;
+    background-color: grey;
+}
+
+.big-btn {
+    width: 90px;
+    height: 70px;
+}
+#Up.active, #Down.active, #Left.active, #Right.active { background-color: black; }
+
+#nav-menu {
+    position: absolute;
+    z-index: 99;
+    right: 0;
+    left: 0;
+    top: 0;
+}
+
+/* DropDown menu - Source: https://designmodo.com/demo/css3dropdownmenu/ */
+.menu,
+.menu ul,
+.menu li,
+.menu a {
+	margin: 0 auto;
+	padding: 0;
+	border: none;
+	outline: none;
+}
+
+/* Menu */
+.menu {	
+	height: 40px;
+	width: auto;
+
+	background: #4c4e5a;
+	background: -webkit-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
+	background: -moz-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
+	background: -o-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
+	background: -ms-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
+	background: linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.menu li {
+	position: relative;
+	list-style: none;
+	float: left;
+	display: block;
+	height: 40px;
+}
+
+/* Links */
+
+.menu li a {
+	display: block;
+	padding: 0 14px;
+	margin: 6px 0;
+	line-height: 28px;
+	text-decoration: none;
+	
+	border-left: 1px solid #393942;
+	border-right: 1px solid #4f5058;
+
+	font-family: Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	font-size: 13px;
+
+	color: #f3f3f3;
+	text-shadow: 1px 1px 1px rgba(0,0,0,.6);
+
+	-webkit-transition: color .2s ease-in-out;
+	-moz-transition: color .2s ease-in-out;
+	-o-transition: color .2s ease-in-out;
+	-ms-transition: color .2s ease-in-out;
+	transition: color .2s ease-in-out;
+}
+
+.menu li:first-child a { border-left: none; }
+.menu li:last-child a{ border-right: none; }
+
+.menu li:hover > a { color: #8fde62; }
+
+/* Sub Menu */
+
+.menu ul {
+	position: absolute;
+	top: 40px;
+	left: 0;
+
+	opacity: 0;
+	
+	background: #1f2024;
+
+	-webkit-border-radius: 0 0 5px 5px;
+	-moz-border-radius: 0 0 5px 5px;
+	border-radius: 0 0 5px 5px;
+
+	-webkit-transition: opacity .25s ease .1s;
+	-moz-transition: opacity .25s ease .1s;
+	-o-transition: opacity .25s ease .1s;
+	-ms-transition: opacity .25s ease .1s;
+	transition: opacity .25s ease .1s;
+}
+
+.menu li:hover > ul { opacity: 1; }
+
+.menu ul li {
+	height: 0;
+	overflow: hidden;
+	padding: 0;
+
+	-webkit-transition: height .25s ease .1s;
+	-moz-transition: height .25s ease .1s;
+	-o-transition: height .25s ease .1s;
+	-ms-transition: height .25s ease .1s;
+	transition: height .25s ease .1s;
+}
+
+.menu li:hover > ul li {
+	height: 36px;
+	overflow: visible;
+	padding: 0;
+}
+
+.menu ul li a {
+	width: 100px;
+	padding: 4px 0 4px 4px;
+	margin: 0;
+
+	border: none;
+	border-bottom: 1px solid #353539;
+}
+
+.menu ul li:last-child a { border: none; }

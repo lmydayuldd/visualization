@@ -103,11 +103,11 @@ const Server = (function Server() {
             if(!m_isConnected) return console.log("Not connected to the server!");
             sendRequest('get_scenarios', null, callback);
         },
-        loadScenario: function loadScenario(scenario, callback) {
+        loadScenario: function loadScenario(scenarioId, callback) {
             if(!m_isConnected) return console.log("Not connected to the server!");
-            if(!scenario) return console.log("Missing parameter: scenario");
+            if(!scenarioId) return console.log("Missing parameter: scenario");
             var params = new SFS2X.SFSObject();
-            params.putInt("id", scenario.id);
+            params.putInt("id", scenarioId);
             
             sendRequest('load_scenario', params, callback);
         },
@@ -140,7 +140,7 @@ const Server = (function Server() {
     
     // Add event listeners
     sfs.addEventListener(SFS2X.SFSEvent.CONNECTION, onConnection, this);
-    sfs.addEventListener(SFS2X.SFSEvent.CONNECTION_LOST, onConnectionLost;, this);
+    sfs.addEventListener(SFS2X.SFSEvent.CONNECTION_LOST, onConnectionLost, this);
 
     sfs.addEventListener(SFS2X.SFSEvent.ROOM_JOIN, onRoomJoined, this);
     sfs.addEventListener(SFS2X.SFSEvent.ROOM_JOIN_ERROR, onRoomJoinError, this);
