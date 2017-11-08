@@ -5,7 +5,7 @@
     <!-- == PROJECT COORDINATES ============================================= -->
     <artifactId>visualization</artifactId>
     <groupId>montisim</groupId>
-    <version>1.0.0</version>
+    <version>0.1.0-t175pS4HuUyNcrh</version>
 
     <!-- ================================================================================ -->
     <!-- External additional maven repositories -->
@@ -100,47 +100,47 @@
         <dependency>
             <groupId>montisim</groupId>
             <artifactId>commons</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
         <dependency>
             <groupId>montisim-controller</groupId>
             <artifactId>library</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
         <dependency>
             <groupId>montisim-controller</groupId>
             <artifactId>control</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
         <dependency>
             <groupId>montisim-controller</groupId>
             <artifactId>navigation</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>environment</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>vehicle</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>sensors</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>network</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>simulator</artifactId>
-            <version>1.0.0</version>
+            <version>0.1.0-t175pS4HuUyNcrh</version>
         </dependency>
     </dependencies>
 
