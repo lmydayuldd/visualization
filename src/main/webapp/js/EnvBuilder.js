@@ -17,6 +17,7 @@ function EnvBuilder(loader, scene) {
     var TEXTURES = {
         asphalt: TEXTURES_DIR + "Street/asphalt.jpg",
         terrain: TEXTURES_DIR + "Grass/texture_grass.jpg",
+	brown: TEXTURES_DIR + "Street/brown.jpg"
     }
 
 
@@ -313,8 +314,15 @@ function EnvBuilder(loader, scene) {
                 }
             }
 
+            if(typeof construction != 'undefined'){
+                self.drawShape(underPlainNodes, lineColor, (width + 2*outline), shadow)
+                                .drawShape(nodes, 'brown', width, shadow);
+            }
+            else{
+
             self.drawShape(underPlainNodes, lineColor, (width + 2*outline), shadow)
                 .drawShape(nodes, 'asphalt', width, shadow);
+            }
 
             //if isSplitted is null or undefined, no line will be drawn, otherwise a non- or splitted line will be drawn
             if(isSplitted === true || isSplitted === false) self.drawLine(nodes, width/2, isSplitted, outline, lineColor, shadow);
