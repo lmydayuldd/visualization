@@ -24,9 +24,9 @@ const Server = (function Server() {
     
     //callback references
     let m_listeners = {
-        onLogin: null,
-        onLoginError: null,
-        onLogout: null
+        onLogin: function () {},
+        onLoginError: function () {},
+        onLogout: function () {}
     };
     let m_extensionListeners = {};
     
@@ -69,14 +69,14 @@ const Server = (function Server() {
                 res.push({ id: sfsScen.getInt('id'), name: sfsScen.getUtfString('name'), tracks: sfsScen.getInt('tracks') });
             }
             //execute registered callback for current command with response parameters
-            if(m_extensionListeners[cmd]) m_extensionListeners[cmd](res);
+            if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](res);
         }
         /**
         * Scenario simulation is prepared on the server.
         */
         else if(e.cmd = 'load_scenario') {
             //execute callback if registered
-            if(m_extensionListeners[cmd]) m_extensionListeners[cmd]();
+            if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd]();
         }
         /**
         * Return next frame data.
@@ -84,7 +84,7 @@ const Server = (function Server() {
         else if(e.cmd = 'next_frame') {
             //TODO return next frame data
             let data = null;
-            if(m_extensionListeners[cmd]) m_extensionListeners[cmd](data);
+            if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](data);
         }
         //start and stop commands do not need callbacks
     };
@@ -127,13 +127,26 @@ const Server = (function Server() {
         //main API methods
         login: function login(user, pass, successCb, errorCb) {
             if(!m_isConnected) return console.log("Not connected to the server!");
-            if(typeof successCb == 'function') m_listeners.onLogin = successCb;
-            if(typeof errorCb == 'function') m_listeners.onLoginError = errorCb;
+            //drop old listeners
+            sfs.removeEventListener(SFS2X.SFSEvent.LOGIN, m_listeners.onLogin, this);
+            sfs.removeEventListener(SFS2X.SFSEvent.LOGIN_ERROR, m_listeners.onLoginError, this);
+            
+            m_listeners.onLogin = typeof successCb == 'function' ? successCb : function () {};
+            m_listeners.onLoginError = typeof errorCb == 'function' ? errorCb : function () {};
+            //register new listeners
+            sfs.addEventListener(SFS2X.SFSEvent.LOGIN, m_listeners.onLogin , this);
+            sfs.addEventListener(SFS2X.SFSEvent.LOGIN_ERROR, m_listeners.onLoginError, this);
+            
             sfs.send(new SFS2X.LoginRequest(user, pass));
         },
         logout: function logout(callback) {
             if(!m_isConnected) return console.log("Not connected to the server!");
-            if(typeof callback == 'function') m_listeners.onLogout = callback;
+            
+            sfs.removeEventListener(SFS2X.SFSEvent.LOGOUT, m_listeners.onLogout, this);
+            
+            m_listeners.onLogout = typeof callback == 'function' ? callback : function () {};
+            
+            sfs.addEventListener(SFS2X.SFSEvent.LOGOUT, m_listeners.onLogout, this);
             sfs.send(new SFS2X.LogoutRequest());
         }
     };
@@ -144,10 +157,6 @@ const Server = (function Server() {
 
     sfs.addEventListener(SFS2X.SFSEvent.ROOM_JOIN, onRoomJoined, this);
     sfs.addEventListener(SFS2X.SFSEvent.ROOM_JOIN_ERROR, onRoomJoinError, this);
-
-    sfs.addEventListener(SFS2X.SFSEvent.LOGIN, m_listeners.onLogin, this);
-    sfs.addEventListener(SFS2X.SFSEvent.LOGIN_ERROR, m_listeners.onLoginError, this);
-    sfs.addEventListener(SFS2X.SFSEvent.LOGOUT, m_listeners.onLogout, this);
     
     sfs.addEventListener(SFS2X.SFSEvent.EXTENSION_RESPONSE, onExtensionResponse, this);
 

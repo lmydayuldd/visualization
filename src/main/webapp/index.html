@@ -144,6 +144,7 @@
             var MESH_BUILDER = null;
             
             var SIMULATED_CARS = [];
+            var USER = '';
 
 			init();
 
@@ -411,25 +412,13 @@
                 
                 //==========================================================================
                 //prepare server callbacks
-                let initNav = function initNav() {
-                    new NavBar([
-                        {
-                            text: 'login',
-                            clas: 'fa fa-user-circle',
-                            onClick: function () {
-                                //login (as guest)
-                                WebService.WS_login(null, null, function onSuccess() { //FIXME login does not work !!!
-                                    //fetch scenarios when user is logged in
-                                    WebService.WS_getScenarios(onScenariousReady);
-                                });
-                            }
-                        }
-                    ], document.getElementById("nav-menu"), true);
-                }
-                
                 let onScenarioLoaded = function onScenarioLoaded() {
                     //update controls
-                    new NavBar([
+                    NavBar([
+                        {
+                            text: USER,
+                            clas: 'fa fa-user-circle'
+                        },
                         {
                             text: 'Vehicles',
                             clas: 'fa fa-car',
@@ -451,7 +440,8 @@
                     ], document.getElementById("nav-menu"), true);
                 }
                 
-                let onScenariosReady = function onScenariousReady(scenarios) {
+                let onScenariosReady = function onScenariosReady(scenarios) {
+                    console.log(scenarios);
                     //prepare scenarios as dropdown data
                     let scenArr = [];
                     for(let i=0; i<scenarios.length; ++i) {
@@ -464,7 +454,11 @@
                     }
                     
                     //update controls
-                    new NavBar([
+                    NavBar([
+                        {
+                            text: USER,
+                            clas: 'fa fa-user-circle'
+                        },
                         {
                             text: 'Scenarios',
                             clas: 'fa fa-file-text',
@@ -475,6 +469,23 @@
                             clas: 'fa fa-window-close',
                             onClick: function logout() {
                                 WebService.WS_logout(initNav);
+                            }
+                        }
+                    ], document.getElementById("nav-menu"), true);
+                }
+                
+                let initNav = function initNav() {
+                    NavBar([
+                        {
+                            text: 'login',
+                            clas: 'fa fa-user-circle',
+                            onClick: function () {
+                                //login (as guest)
+                                WebService.WS_login(null, null, function onSuccess(e) { //FIXME login does not work !!!
+                                    USER = e.user.name;
+                                    //fetch scenarios when user is logged in
+                                    WebService.WS_getScenarios(onScenariosReady);
+                                });
                             }
                         }
                     ], document.getElementById("nav-menu"), true);
@@ -576,18 +587,18 @@
                 //clear up car information for previous simulation
                 SIMULATED_CARS = [];
                 //fetch scenarios again and build navigation bar
-                WebService.WS_getScenarios(onScenariousReady);
+                WebService.WS_getScenarios(onScenariosReady);
             }
 
 			/**
 			*	toggle some HUD elements
 			*/ 
 			function toggleHUD() {
-				var HUD = ["buttons_cars", "lbl1", "lbl2"];
+				var HUD = ["nav-menu", "lbl2"];
 
 				for(var i = 0; i<HUD.length; i++) {
 					var display = document.getElementById(HUD[i]).style.display;
-					if(display == "block") document.getElementById(HUD[i]).style.display="none";
+					if(display != "none") document.getElementById(HUD[i]).style.display="none";
 					else document.getElementById(HUD[i]).style.display="block";
 				}
 			}

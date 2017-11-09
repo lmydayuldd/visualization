@@ -45,6 +45,7 @@ const NavBar = function NavBar(items, container, clearContainer) {
     for(var i=0; i<items.length; ++i) createItem(items[i], menu);
     
     //add menu to container
+    menu.style = "visibility: hidden";
     container.appendChild(menu);
     
             
