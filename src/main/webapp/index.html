@@ -348,7 +348,7 @@
 
 							data[i].nodes[n] = new THREE.Vector3(node.x, node.y, node.z);
 						}
-						eb.drawRoad(data[i].nodes, data[i].streetWidth);
+						eb.drawRoad(data[i].nodes, data[i].streetWidth, undefined, undefined , undefined);
 					}
           			resolve();
 				});
@@ -444,8 +444,28 @@
                 // Static box objects
                 DataModel.addHandler(DataModel.STATIC_BOX_OBJECT_HANDLER, function staticBoxObjectsHandler(data, resolve, reject) {
                     for(var i = 0; i < data.length; ++i) {
+                        // PHYSICAL_OBJECT_TYPE_TREE
+                        if (data[i].objectType == 7)
+                        {
+                            mb.addTreeStd(data[i].id, {x: data[i].position.x, y: data[i].position.y, z:data[i].position.z}, {x:0, y:0, z:0});
+                        }
+                        // PHYSICAL_OBJECT_TYPE_STREETLANTERN
+                        else if (data[i].objectType == 8)
+                        {
+                            mb.addStreetLamp(data[i].id, {x: data[i].position.x, y: data[i].position.y, z:data[i].position.z}, {x:0, y:0, z:0});
+                        }
+                        //PHYSICAL_OBJECT_TYPE_ROADWORKSIGN
+                        else if (data[i].objectType == 9)
+                        {
+                            mb.addCons(data[i].id, {x: data[i].position.x, y: data[i].position.y, z:data[i].position.z}, {x:0, y:0, z:0});
+                        }
+                        //PHYSICAL_OBJECT_TYPE_HOUSE
+                        else if(data[i].objectType == 10)
+                        {
+                            mb.addHouse(data[i].id, {x: data[i].position.x, y: data[i].position.y, z:data[i].position.z}, {x:0, y:0, z:0});
+                        }
                         // PHYSICAL_OBJECT_TYPE_NETWORK_CELL_BASE_STATION
-                        if (data[i].objectType == 8)
+                        else if (data[i].objectType == 11)
                         {
                             var obj = new THREE.Mesh(new THREE.CubeGeometry(data[i].width * 100, data[i].height * 100, data[i].length * 100), new THREE.MeshLambertMaterial({color: 0x555555, side: THREE.DoubleSide}));
                             obj.position.x = data[i].position.x;
