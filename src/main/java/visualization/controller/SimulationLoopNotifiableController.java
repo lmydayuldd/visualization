@@ -645,6 +645,20 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
             if (simulationObject instanceof NetworkCellBaseStation) {
                 NetworkCellBaseStation networkCellBaseStation = (NetworkCellBaseStation) simulationObject;
                 this.simulatedWorldInformation.addStaticBoxObject(new StaticBoxObject(networkCellBaseStation));
+            } else if (simulationObject instanceof Tree) {
+                Tree tree = (Tree) simulationObject;
+                this.simulatedWorldInformation.addStaticBoxObject(new StaticBoxObject(tree));
+            } else if (simulationObject instanceof StreetLantern) {
+                StreetLantern streetLantern = (StreetLantern) simulationObject;
+                this.simulatedWorldInformation.addStaticBoxObject(new StaticBoxObject(streetLantern));
+            }
+            else if(simulationObject instanceof House) {
+                House house = (House) simulationObject;
+                this.simulatedWorldInformation.addStaticBoxObject(new StaticBoxObject(house));
+            }
+            else if(simulationObject instanceof RoadWorkSign) {
+                RoadWorkSign roadWorkSign= (RoadWorkSign) simulationObject;
+                this.simulatedWorldInformation.addStaticBoxObject(new StaticBoxObject(roadWorkSign));
             }
         }
     }
