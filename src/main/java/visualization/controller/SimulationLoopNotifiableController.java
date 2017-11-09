@@ -46,6 +46,15 @@ import simulation.vehicle.PhysicalVehicle;
 import simulation.vehicle.PhysicalVehicleBuilder;
 import simulation.vehicle.RandomStatusLogger;
 
+import simulation.environment.object.Tree;
+import simulation.environment.object.StreetLantern;
+import simulation.environment.object.House;
+import simulation.environment.object.RoadWorkSign;
+import simulation.environment.visualisationadapter.implementation.Node2D;
+import simulation.environment.visualisationadapter.interfaces.EnvNode;
+import simulation.environment.visualisationadapter.interfaces.EnvStreet;
+
+
 @Controller
 @RequestMapping(value = RestApi.SIMULATION)
 public class SimulationLoopNotifiableController implements SimulationLoopNotifiable {
@@ -113,6 +122,40 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
         baseStation2.addConnectedBaseStationID(baseStation3.getId());
         baseStation1.addConnectedBaseStationID(baseStation2.getId());
         baseStation3.addConnectedBaseStationID(baseStation2.getId());
+        
+        
+        //setup the trees
+        setupTrees();
+
+        //setup the lanterns
+        setupStreetLantern();
+
+        //setup the construction signs
+        setupCons();
+
+        //setup the Houses
+        setupHouses();
+
+
+        //examples for adding objetcs
+
+        //Tree tree = new Tree();
+        //sim.registerAndPutObject(tree,1580.31626412008, 870.404690000371, 0);
+        //More objectives
+
+        //StreetLantern streetLantern = new StreetLantern();
+        //sim.registerAndPutObject(streetLantern, 1584.31626412008, 877.404690000371, 0);
+
+        //RoadWorkSign roadWorkSign = new RoadWorkSign();
+        //sim.registerAndPutObject(roadWorkSign, 1584.31626412008, 877.404690000371, 0);
+
+        //House house = new House();
+        //sim.registerAndPutObject(house, 1584.31626412008, 877.404690000371, 0);
+
+
+        // add simulation objects
+        // +++++++++++++++++++++++++++++++++++++++
+        
 
         // add simulation objects
         // ++++++++++++++++++++++++++++++++++++++++
@@ -133,6 +176,365 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
         return true;
     }
 
+    
+    //methods for adding the objects as decripted in the documentation
+     private void setupCons() {
+        //distance between the signs
+        double a = 500;
+        for (EnvStreet street : WorldModel.getInstance().getContainer().getStreets()) {
+            ArrayList<EnvNode> nodes = (ArrayList<EnvNode>) street.getNodes();
+
+            double width = street.getStreetWidth().doubleValue();
+            for (int i = 1; i < nodes.size(); i++) {
+                double az = 0, ax = 0;
+                EnvNode node = nodes.get(i);
+                EnvNode prev = nodes.get(i - 1);
+                double nodex2 = 0, nodez2 = 0;
+                double r = Math.random();
+                //to avoid a crash of the simulator--> random spawn
+                if (r >= 0.5) {
+                    double deltax = node.getX().doubleValue() - prev.getX().doubleValue();
+                    double deltaz = node.getY().doubleValue() - prev.getY().doubleValue();
+                    //l is the length of this part
+                    double l = Math.sqrt(deltax * deltax + deltaz * deltaz);
+                    if (2 * (width / (Math.sqrt(2))) <= l) {
+                        double nodex = node.getX().doubleValue();
+                        double nodez = node.getY().doubleValue();
+                        if (deltax != 0 && deltaz != 0) {
+                            double b = deltax / -deltaz;
+                            double ll = Math.sqrt(b * b + 1);
+                            nodez = nodez - (width / 2) * 1 / ll * b;
+                            nodex = nodex - (width / 2) * 1 / ll * 1;
+                            //place the sign under the node
+                            RoadWorkSign workSign = new RoadWorkSign();
+                            sim.registerAndPutObject(workSign, nodex, nodez, 0);
+
+                            nodex2 = nodex;
+                            nodez2 = nodez;
+                            nodex = node.getX().doubleValue();
+                            nodez = node.getY().doubleValue();
+                        } else if (deltax == 0) {
+                            nodex = nodex - (width / 2);
+                            //place the sign under the node
+                            RoadWorkSign workSign = new RoadWorkSign();
+                            sim.registerAndPutObject(workSign, nodex, nodez, 0);
+                            nodex2 = nodex;
+                            nodez2 = nodez;
+                            nodex = node.getX().doubleValue();
+                            nodez = node.getY().doubleValue();
+                        } else if (deltaz == 0) {
+                            nodez = nodez - (width / 2);
+                            //place the sign under the node
+                            RoadWorkSign workSign = new RoadWorkSign();
+                            sim.registerAndPutObject(workSign, nodex, nodez, 0);
+                            nodex2 = nodex;
+                            nodez2 = nodez;
+                            nodex = node.getX().doubleValue();
+                            nodez = node.getY().doubleValue();
+                        }
+                        //ax and az = distance between node and current point
+                        ax = nodex - (width / (Math.sqrt(2))) * 1 / l * deltax;
+                        az = nodez - (width / (Math.sqrt(2))) * 1 / l * deltaz;
+                        RoadWorkSign workSign2 = new RoadWorkSign();
+                        sim.registerAndPutObject(workSign2, ax, az, 0);
+                        RoadWorkSign workSign3 = new RoadWorkSign();
+                        sim.registerAndPutObject(workSign3, (nodex2 + ax) / 2, (nodez2 + az) / 2, 0);
+
+                        //ll = Length of the distance
+                        double ll = Math.sqrt((ax - nodex) * (ax - nodex) + (az - nodez) * (az - nodez));
+                        double m = 1;
+                        while ((ll + a) <= (l - (width / (Math.sqrt(2))))) {
+                            ax = ax - m * a * deltax * (1 / l);
+                            az = az - m * a * deltaz * (1 / l);
+                            RoadWorkSign workSign = new RoadWorkSign();
+                            sim.registerAndPutObject(workSign, ax, az, 0);
+                            ll = Math.sqrt((ax - nodex) * (ax - nodex) + (az - nodez) * (az - nodez));
+                            m++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    private void setupTrees() {
+        //a is the distance between trees in a row of them
+        double a = 1000;
+        for (EnvStreet street : WorldModel.getInstance().getContainer().getStreets()) {
+            ArrayList<EnvNode> nodes = (ArrayList<EnvNode>) street.getNodes();
+
+            double width = street.getStreetWidth().doubleValue();
+            for (int i = 1; i < nodes.size(); i++) {
+                EnvNode node = nodes.get(i);
+                EnvNode prev = nodes.get(i - 1);
+                double r = Math.random();
+                //to avoid a crash of the simulator--> random spawn
+                if (r >= 0.5) {
+
+                    double deltax = node.getX().doubleValue() - prev.getX().doubleValue();
+                    double deltaz = node.getY().doubleValue() - prev.getY().doubleValue();
+                    double mx = (node.getX().doubleValue() + prev.getX().doubleValue()) / 2;
+                    double mz = (node.getY().doubleValue() + prev.getY().doubleValue()) / 2;
+                    double l = Math.sqrt(deltax * deltax + deltaz * deltaz);
+                    if (deltax != 0 && deltaz != 0) {
+                        double b = deltax / -deltaz;
+                        double ll = Math.sqrt(b * b + 1);
+                        mx = mx + (width / 2 + 100) * 1 / ll * 1;
+                        mz = mz + (width / 2 + 100) * 1 / ll * b;
+                        Tree tree = new Tree();
+                        sim.registerAndPutObject(tree, mx, mz, 0);
+                        mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                        mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                        mz = mz - (width / 2 + 100) * 1 / ll * b;
+                        mx = mx - (width / 2 + 100) * 1 / ll * 1;
+                        Tree tree2 = new Tree();
+                        sim.registerAndPutObject(tree2, mx, mz, 0);
+                        mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                        mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                        mz = mz + (width / 2 + 100) * 1 / ll * b;
+                        mx = mx + (width / 2 + 100) * 1 / ll * 1;
+                        if (l >= (2 * a)) {
+                            mz = mz + a * 1 / l * deltaz;
+                            mx = mx + a * 1 / l * deltax;
+                            Tree tree3 = new Tree();
+                            sim.registerAndPutObject(tree3, mx, mz, 0);
+                            mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                            mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                            mx = mx - (width / 2 + 100) * 1 / ll * 1;
+                            mz = mz - (width / 2 + 100) * 1 / ll * b;
+                            mx = mx + a * 1 / l * deltax;
+                            mz = mz + a * 1 / l * deltaz;
+                            Tree tree4 = new Tree();
+                            sim.registerAndPutObject(tree4, mx, mz, 0);
+                            mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                            mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                            mx = mx + (width / 2 + 100) * 1 / ll * 1;
+                            mz = mz + (width / 2 + 100) * 1 / ll * b;
+                            mz = mz - a * 1 / l * deltaz;
+                            mx = mx - a * 1 / l * deltax;
+                            Tree tree5 = new Tree();
+                            sim.registerAndPutObject(tree5, mx, mz, 0);
+                            mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                            mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                            mx = mx - (width / 2 + 100) * 1 / ll * 1;
+                            mz = mz - (width / 2 + 100) * 1 / ll * b;
+                            mx = mx - a * 1 / l * deltax;
+                            mz = mz - a * 1 / l * deltaz;
+                            Tree tree6 = new Tree();
+                            sim.registerAndPutObject(tree6, mx, mz, 0);
+                        }
+                    } else if (deltax == 0) {
+                        mx = mx + (width / 2 + 100);
+                        Tree tree = new Tree();
+                        sim.registerAndPutObject(tree, mx, mz, 0);
+                        mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                        mx = mx - (width / 2 + 100);
+                        Tree tree2 = new Tree();
+                        sim.registerAndPutObject(tree2, mx, mz, 0);
+                        if (l >= 2 * a) {
+                            mz = mz + a * 1 / l * deltaz;
+                            Tree tree3 = new Tree();
+                            sim.registerAndPutObject(tree3, mx, mz, 0);
+                            mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                            mx = mx + (width / 2 + 100);
+                            Tree tree4 = new Tree();
+                            sim.registerAndPutObject(tree4, mx, mz, 0);
+                            mz = mz - 2 * a * 1 / l * deltaz;
+                            Tree tree5 = new Tree();
+                            sim.registerAndPutObject(tree5, mx, mz, 0);
+                            mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                            mx = mx - (width / 2 + 100);
+                            Tree tree6 = new Tree();
+                            sim.registerAndPutObject(tree6, mx, mz, 0);
+                        }
+                    } else if (deltaz == 0) {
+                        mz = mz + (width / 2 + 100);
+                        Tree tree = new Tree();
+                        sim.registerAndPutObject(tree, mx, mz, 0);
+                        mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                        mz = mz - (width / 2 + 100);
+                        Tree tree2 = new Tree();
+                        sim.registerAndPutObject(tree2, mx, mz, 0);
+                        if (l >= 2 * a) {
+                            mx = mx + a * 1 / l * deltax;
+                            Tree tree3 = new Tree();
+                            sim.registerAndPutObject(tree3, mx, mz, 0);
+                            mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                            mz = mz + (width / 2 + 100);
+                            Tree tree4 = new Tree();
+                            sim.registerAndPutObject(tree4, mx, mz, 0);
+                            mx = mx - 2 * a * 1 / l * deltax;
+                            Tree tree5 = new Tree();
+                            sim.registerAndPutObject(tree5, mx, mz, 0);
+                            mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                            mz = mz - (width / 2 + 100);
+                            Tree tree6 = new Tree();
+                            sim.registerAndPutObject(tree6, mx, mz, 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void setupStreetLantern() {
+        //for the distance between the lanterns
+        double a = 2000;
+        for (EnvStreet street : WorldModel.getInstance().getContainer().getStreets()) {
+            ArrayList<EnvNode> nodes = (ArrayList<EnvNode>) street.getNodes();
+
+            double width = street.getStreetWidth().doubleValue();
+            for (int i = 1; i < nodes.size(); i++) {
+                EnvNode node = nodes.get(i);
+                EnvNode prev = nodes.get(i - 1);
+                //linear equation
+                double r = Math.random();
+                double lu = 0, ll = 0, b = 0;
+                double nodex2 = 0, nodez2 = 0;
+                //to avoid a crash of the simulator--> random spawn
+                if (r >= 0.5) {
+
+                    double deltax = node.getX().doubleValue() - prev.getX().doubleValue();
+                    double deltaz = node.getY().doubleValue() - prev.getY().doubleValue();
+                    double l = Math.sqrt(deltax * deltax + deltaz * deltaz);
+                    double nodex = node.getX().doubleValue();
+                    double nodez = node.getY().doubleValue();
+                    if (deltax != 0 && deltaz != 0) {
+                        b = deltax / -deltaz;
+                        ll = Math.sqrt(b * b + 1);
+                        nodex = nodex - (width / 2) * 1 / ll * 1;
+                        nodez = nodez - (width / 2) * 1 / ll * b;
+                        nodex2 = nodex;
+                        nodez2 = nodez;
+                        double ax = nodex - nodex2;
+                        double az = nodez - nodez2;
+                        lu = Math.sqrt(ax * ax + az * az);
+                        StreetLantern streetLantern = new StreetLantern();
+                        sim.registerAndPutObject(streetLantern, nodex, nodez, 0);
+                    } else if (deltax == 0) {
+                        nodex = nodex - (width / 2);
+                        nodex2 = nodex;
+                        nodez2 = nodez;
+                        double ax = nodex - nodex2;
+                        double az = nodez - nodez2;
+                        StreetLantern streetLantern = new StreetLantern();
+                        sim.registerAndPutObject(streetLantern, nodex, nodez, 0);
+                        lu = Math.sqrt(ax * ax + az * az);
+                    } else if (deltaz == 0) {
+                        nodez = nodez - (width / 2);
+                        nodex2 = nodex;
+                        nodez2 = nodez;
+                        double ax = nodex - nodex2;
+                        double az = nodez - nodez2;
+                        StreetLantern streetLantern = new StreetLantern();
+                        sim.registerAndPutObject(streetLantern, nodex, nodez, 0);
+                        lu = Math.sqrt(ax * ax + az * az);
+                    }
+                    while (l >= lu + a) {
+                        nodex = nodex - a * deltax * (1 / l);
+                        nodez = nodez - a * deltaz * (1 / l);
+                        StreetLantern streetLantern = new StreetLantern();
+                        sim.registerAndPutObject(streetLantern, nodex, nodez, 0);
+                        double ax = nodex - nodex2;
+                        double az = nodez - nodez2;
+                        lu = Math.sqrt((ax) * (ax) + (az) * (az));
+                    }
+                    //now the other side
+                    nodex = node.getX().doubleValue();
+                    nodez = node.getY().doubleValue();
+                    if (deltax != 0 && deltaz != 0) {
+                        nodex = nodex + (width / 2) * 1 / ll * 1;
+                        nodez = nodez + (width / 2) * 1 / ll * b;
+                        nodex2 = nodex;
+                        nodez2 = nodez;
+                        double ax = nodex - nodex2;
+                        double az = nodez - nodez2;
+                        lu = Math.sqrt(ax * ax + az * az);
+                        StreetLantern streetLantern = new StreetLantern();
+                        sim.registerAndPutObject(streetLantern, nodex, nodez, 0);
+                    } else if (deltax == 0) {
+                        nodex = nodex + (width / 2);
+                        nodex2 = nodex;
+                        nodez2 = nodez;
+                        double ax = nodex - nodex2;
+                        double az = nodez - nodez2;
+                        StreetLantern streetLantern = new StreetLantern();
+                        sim.registerAndPutObject(streetLantern, nodex, nodez, 0);
+                        lu = Math.sqrt(ax * ax + az * az);
+                    } else if (deltaz == 0) {
+                        nodez = nodez + (width / 2);
+                        nodex2 = nodex;
+                        nodez2 = nodez;
+                        double ax = nodex - nodex2;
+                        double az = nodez - nodez2;
+                        StreetLantern streetLantern = new StreetLantern();
+                        sim.registerAndPutObject(streetLantern, nodex, nodez, 0);
+                        lu = Math.sqrt(ax * ax + az * az);
+                    }
+                    while (l >= lu + a) {
+                        nodex = nodex - a * deltax * (1 / l);
+                        nodez = nodez - a * deltaz * (1 / l);
+                        StreetLantern streetLantern = new StreetLantern();
+                        sim.registerAndPutObject(streetLantern, nodex, nodez, 0);
+                        double ax = nodex - nodex2;
+                        double az = nodez - nodez2;
+                        lu = Math.sqrt((ax) * (ax) + (az) * (az));
+                    }
+                }
+            }
+        }
+    }
+
+
+    private void setupHouses()
+    {
+        for (EnvStreet street : WorldModel.getInstance().getContainer().getStreets()) {
+            {
+                ArrayList<EnvNode> nodes = (ArrayList<EnvNode>) street.getNodes();
+
+                double width = street.getStreetWidth().doubleValue();
+                for (int i = 1; i < nodes.size(); i++) {
+                    EnvNode node = nodes.get(i);
+                    EnvNode prev = nodes.get(i - 1);
+                    double deltax = node.getX().doubleValue() - prev.getX().doubleValue();
+                    double deltaz = node.getY().doubleValue() - prev.getY().doubleValue();
+                    double l = Math.sqrt(deltax * deltax + deltaz * deltaz);
+                    double r = Math.random();
+                    //275 is the size of one side of the housevisualization
+                    if (r >= 0.5) {
+                        if (l > 275) {
+                            if (deltax != 0 && deltaz != 0) {
+                                double b = deltax / -deltaz;
+                                double ll = Math.sqrt(b * b + 1);
+                                double mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                                double mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                                mz = mz + (width / 2 + 1000) * 1 / ll * b;
+                                mx = mx + (width / 2 + 1000) * 1 / ll * 1;
+                                House house = new House();
+                                sim.registerAndPutObject(house, mx, mz, 0);
+                            } else if (deltaz == 0) {
+                                double mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                                double mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                                mz = mz + width / 2 + 1000;
+                                House house = new House();
+                                sim.registerAndPutObject(house, mx, mz, 0);
+                            } else if (deltax == 0) {
+                                double mz = (prev.getY().doubleValue() + node.getY().doubleValue()) / 2;
+                                double mx = (prev.getX().doubleValue() + node.getX().doubleValue()) / 2;
+                                mx = mx + width / 2 + 1000;
+                                House house = new House();
+                                sim.registerAndPutObject(house, mx, mz, 0);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    
     @MessageMapping(Messaging.GET_NEXT_FRAME)
     public void getNextFrame() throws InterruptedException {
         //logger.info("Client asks for next frame");
