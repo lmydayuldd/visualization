@@ -142,6 +142,11 @@
             <artifactId>simulator</artifactId>
             <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
+        <dependency>
+            <groupId>montiarc</groupId>
+            <artifactId>autopilot-integration</artifactId>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
+        </dependency>
     </dependencies>
 
 
