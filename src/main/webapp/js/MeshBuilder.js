@@ -239,6 +239,33 @@ function MeshBuilder(jsonLoader, tgaLoader, scene, meshArr) {
             return self;
 		},
 		
+				addHouse: function addHouse(id, position, rotation){
+		    let scale = {x:100*SC_MULT, y:100*SC_MULT, z:100*SC_MULT};
+		    //console.log(scale.x);
+		    //console.log(scale.y);
+            let mapType = 0;
+            add(id, "house", mapType, position, scale, rotation);
+            return self;
+		},
+
+		addPatrol: function addPatrol(id, position, rotation){
+            let scale = {x:1*SC_MULT, y:1*SC_MULT, z:1*SC_MULT};
+        	//console.log(scale.x);
+        	//console.log(scale.y);
+            let mapType = 0;
+            add(id, "patrol", mapType, position, scale, rotation);
+            return self;
+       	},
+
+       	addCons: function addCons(id, position, rotation){
+            let scale = {x:10*SC_MULT, y:10*SC_MULT, z:10*SC_MULT};
+            //console.log(scale.x);
+            //console.log(scale.y);
+            let mapType = 0;
+            add(id, "cons", mapType, position, scale, rotation);
+            return self;
+        },
+		
         addTreePine: function addTreePine(id, position, rotation) {
 			let scale = {x:24*SC_MULT, y:24*SC_MULT, z:24*SC_MULT};
 			let mapType = 0;
