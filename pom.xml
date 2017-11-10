@@ -5,7 +5,7 @@
     <!-- == PROJECT COORDINATES ============================================= -->
     <artifactId>visualization</artifactId>
     <groupId>montisim</groupId>
-    <version>0.1.0-t175pS4HuUyNcrh</version>
+    <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
 
     <!-- ================================================================================ -->
     <!-- External additional maven repositories -->
@@ -100,47 +100,47 @@
         <dependency>
             <groupId>montisim</groupId>
             <artifactId>commons</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
         <dependency>
             <groupId>montisim-controller</groupId>
             <artifactId>library</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
         <dependency>
             <groupId>montisim-controller</groupId>
             <artifactId>control</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
         <dependency>
             <groupId>montisim-controller</groupId>
             <artifactId>navigation</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>environment</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>vehicle</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>sensors</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>network</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
         <dependency>
             <groupId>montisim-simulation</groupId>
             <artifactId>simulator</artifactId>
-            <version>0.1.0-t175pS4HuUyNcrh</version>
+            <version>0.1.1-fGWiGhVOHEqxe9fiCfQF6Q</version>
         </dependency>
     </dependencies>
 
