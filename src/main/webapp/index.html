@@ -96,6 +96,11 @@
 	<body>
 		<div id="lbl1" class="lbl">
 				<button id="startSimulation" onclick="onStartClick(); WebService.WS_start(); WebService.WS_nextFrame()">Start</button>
+				<button onclick="onStartClick(); WebService.WS_start({scenarioNo: 1}); WebService.WS_nextFrame()">Start (1)</button>
+				<button onclick="onStartClick(); WebService.WS_start({scenarioNo: 2}); WebService.WS_nextFrame()">Start (2)</button>
+				<button onclick="onStartClick(); WebService.WS_start({scenarioNo: 3}); WebService.WS_nextFrame()">Start (3)</button>
+				<button onclick="onStartClick(); WebService.WS_start({scenarioNo: 4}); WebService.WS_nextFrame()">Start (4)</button>
+				<button onclick="onStartClick(); WebService.WS_start({scenarioNo: 5}); WebService.WS_nextFrame()">Start (5)</button>
 				<button id="stopSimulation" onclick="WebService.WS_stop()">Stop</button>
 		</div>
 

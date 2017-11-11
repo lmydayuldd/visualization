@@ -115,8 +115,8 @@ window.montiarc.messaging = window.montiarc.messaging || Object.create(null);
             this._send(outgoingChannels.getnextframe);
         }
 
-        start() {
-            this._send(outgoingChannels.start);
+        start(settings) {
+            this._send(outgoingChannels.start, settings);
         }
         stop() {
             this._send(outgoingChannels.stop);

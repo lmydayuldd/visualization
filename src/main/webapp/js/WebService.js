@@ -85,7 +85,7 @@ const WebService = (function WebService() {
         //WebSockets commands
         WS_attachListener: function WSattachListener(listener) { WS.onMessage(listener); },
 
-        WS_start: function () { WS.start(); SIM_RUNNING = true; },
+        WS_start: function (settings) { WS.start(settings); SIM_RUNNING = true; },
         WS_stop: function () { WS.stop(); SIM_RUNNING = false; },
 
         WS_nextFrame: function () { if(SIM_RUNNING) WS.requestNextFrame(); },
