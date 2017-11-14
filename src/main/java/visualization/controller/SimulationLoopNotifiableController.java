@@ -26,6 +26,8 @@ import simulation.simulator.Simulator;
 import simulation.vehicle.PhysicalVehicle;
 import simulation.vehicle.PhysicalVehicleBuilder;
 import simulation.vehicle.RandomStatusLogger;
+import simulator.integration.AutopilotAdapter;
+import simulator.integration.AutopilotAdapterAsFunctionBlock;
 import visualization.configuration.AppSettings;
 import visualization.configuration.Messaging;
 import visualization.configuration.RestApi;
@@ -73,24 +75,34 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
         // ++++++++++++++++++++++++++++++++++++++++
         if (settings != null && settings.getScenarioNo() != null) {
             int no = settings.getScenarioNo();
-            switch (no) {
-                case 1:
-                    setupScenario1();
-                    break;
-                case 2:
-                    setupScenario2();
-                    break;
-                case 3:
-                    setupScenario3();
-                    break;
-                case 4:
-                    setupScenario4();
-                    break;
-                case 5:
-                    setupScenario5();
-                    break;
-                default:
-                    setupScenario1();
+            if (settings.isNativeModel()) {
+                switch (no) {
+                    case 1:
+                        setupScenario1ForNativeModel();
+                        break;
+                    default:
+                        setupScenario1ForNativeModel();
+                }
+            } else {
+                switch (no) {
+                    case 1:
+                        setupScenario1();
+                        break;
+                    case 2:
+                        setupScenario2();
+                        break;
+                    case 3:
+                        setupScenario3();
+                        break;
+                    case 4:
+                        setupScenario4();
+                        break;
+                    case 5:
+                        setupScenario5();
+                        break;
+                    default:
+                        setupScenario1();
+                }
             }
         } else {
             setupScenario1();
@@ -242,6 +254,40 @@ public class SimulationLoopNotifiableController implements SimulationLoopNotifia
         mainBlockAdapter.setVehicle(physicalVehicle);
         Simulator.getSharedInstance().registerAndPutObject(mainBlockAdapter.getVehicle(), startX, startY, startRotation);
         mainBlockAdapter.driveToNodeId(destinationNodeId);
+        return mainBlockAdapter;
+    }
+
+    public static AutopilotAdapterAsFunctionBlock setupScenario1ForNativeModel() {
+        // drive along Pariser Ring
+        return setupScenarioForNativeModel(
+                891.8161730201917,
+                229.75065720023528,
+                -0.25 * Math.PI,
+                27289812
+        );
+    }
+
+    public static AutopilotAdapterAsFunctionBlock setupScenarioForNativeModel(
+            double startX,
+            double startY,
+            double startRotation,
+            long destinationNodeId
+    ) {
+        PhysicalVehicleBuilder vehicleBuilder = PhysicalVehicleBuilder.getInstance();
+        vehicleBuilder.resetPhysicalVehicle();
+        AutopilotAdapterAsFunctionBlock mainBlockAdapter = new AutopilotAdapterAsFunctionBlock(
+                new AutopilotAdapter()
+        );
+        PhysicalVehicle physicalVehicle = vehicleBuilder.buildPhysicalVehicle(
+                Optional.of(new DataBus()),
+                Optional.of(mainBlockAdapter),
+                Optional.empty()
+        );
+        physicalVehicle.getSimulationVehicle().setStatusLogger(new RandomStatusLogger());
+        SensorUtil.sensorAdder(physicalVehicle);
+        mainBlockAdapter.setVehicle(physicalVehicle);
+        Simulator.getSharedInstance().registerAndPutObject(mainBlockAdapter.getVehicle(), startX, startY, startRotation);
+        mainBlockAdapter.driveToNode(destinationNodeId);
         return mainBlockAdapter;
     }
 
