@@ -14,10 +14,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.math3.linear.RealVector;
 import simulation.environment.World;
 import simulation.environment.WorldModel;
+import simulation.environment.osm.ParserSettings;
 import simulation.vehicle.PhysicalVehicle;
 import simulation.vehicle.VehicleActuatorType;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
-
-    private static final int MAX_INPUT_LIST_LEN = 10000;
 
     private final AutopilotAdapter adapter;
 
@@ -82,18 +82,21 @@ public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
     @Override
     public Map<String, Object> getOutputs() {
         adapter.initialize();
+        double engine = adapter.get_engine();
+        double brakes = adapter.get_brakes();
+        double steering = adapter.get_steering();
         Map<String, Object> result = new HashMap<>();
         result.put(
                 BusEntry.ACTUATOR_ENGINE.toString(),
-                adapter.get_engine()
+                engine
         );
         result.put(
                 BusEntry.ACTUATOR_BRAKE.toString(),
-                adapter.get_brakes()
+                brakes
         );
         result.put(
                 BusEntry.ACTUATOR_STEERING.toString(),
-                adapter.get_steering()
+                steering
         );
         return result;
     }
@@ -105,25 +108,23 @@ public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
 
     private void setMapData() {
         if (isMapDataInitialized) {
+            adapter.set_addNodes_length(0);
+            adapter.set_addOrUpdateEdges_length(0);
             return;
         }
-        int addNodes_length = 0;
-        long[] addNodes_id = new long[MAX_INPUT_LIST_LEN];
-        double[] addNodes_gpsLat = new double[MAX_INPUT_LIST_LEN];
-        double[] addNodes_gpsLon = new double[MAX_INPUT_LIST_LEN];
-        int addOrUpdateEdges_length = 0;
-        long[] addOrUpdateEdges_fromNodeId = new long[MAX_INPUT_LIST_LEN];
-        long[] addOrUpdateEdges_toNodeId = new long[MAX_INPUT_LIST_LEN];
-        double[] addOrUpdateEdges_cost = new double[MAX_INPUT_LIST_LEN];
         InMemoryMapDataSet osmDataSet = getOsmDataSet();
         if (osmDataSet == null) {
+            adapter.set_addNodes_length(0);
+            adapter.set_addOrUpdateEdges_length(0);
             isMapDataInitialized = true;
             return;
         }
         World worldModel = WorldModel.getInstance();
         List<IAdjacency> adj = worldModel.getControllerMap().getAdjacencies();
         Set<Long> processedNodes = new HashSet<>();
+        List<OsmNode> nodesToAdd = new ArrayList<>();
         Set<ImmutablePair<Long, Long>> processedEdges = new HashSet<>();
+        List<IAdjacency> edgesToAdd = new ArrayList<>();
         for (IAdjacency a : adj) {
             IControllerNode n1 = a.getNode1();
             IControllerNode n2 = a.getNode1();
@@ -138,10 +139,7 @@ public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
                         // just skip it
                     }
                     if (osmNode != null) {
-                        addNodes_id[addNodes_length] = osmId;
-                        addNodes_gpsLat[addNodes_length] = osmNode.getLatitude();
-                        addNodes_gpsLon[addNodes_length] = osmNode.getLongitude();
-                        addNodes_length++;
+                        nodesToAdd.add(osmNode);
                     }
                 }
             }
@@ -149,20 +147,37 @@ public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
             long toId = n2.getOsmId();
             ImmutablePair<Long, Long> edge = ImmutablePair.of(fromId, toId);
             if (processedEdges.add(edge)) {
-                addOrUpdateEdges_fromNodeId[addOrUpdateEdges_length] = fromId;
-                addOrUpdateEdges_toNodeId[addOrUpdateEdges_length] = toId;
-                addOrUpdateEdges_cost[addOrUpdateEdges_length] = a.getDistance();
-                addOrUpdateEdges_length++;
+                edgesToAdd.add(a);
             }
         }
+        int addNodes_length = nodesToAdd.size();
         adapter.set_addNodes_length(addNodes_length);
         if (addNodes_length > 0) {
+            long[] addNodes_id = new long[addNodes_length];
+            double[] addNodes_gpsLat = new double[addNodes_length];
+            double[] addNodes_gpsLon = new double[addNodes_length];
+            for (int i = 0; i < addNodes_length; i++) {
+                OsmNode n = nodesToAdd.get(i);
+                addNodes_id[i] = n.getId();
+                addNodes_gpsLat[i] = n.getLatitude();
+                addNodes_gpsLon[i] = n.getLongitude();
+            }
             adapter.set_addNodes_id(addNodes_id);
             adapter.set_addNodes_gpsLat(addNodes_gpsLat);
             adapter.set_addNodes_gpsLon(addNodes_gpsLon);
         }
+        int addOrUpdateEdges_length = edgesToAdd.size();
         adapter.set_addOrUpdateEdges_length(addOrUpdateEdges_length);
         if (addOrUpdateEdges_length > 0) {
+            long[] addOrUpdateEdges_fromNodeId = new long[addOrUpdateEdges_length];
+            long[] addOrUpdateEdges_toNodeId = new long[addOrUpdateEdges_length];
+            double[] addOrUpdateEdges_cost = new double[addOrUpdateEdges_length];
+            for (int i = 0; i < addNodes_length; i++) {
+                IAdjacency e = edgesToAdd.get(i);
+                addOrUpdateEdges_fromNodeId[i] = e.getNode1().getOsmId();
+                addOrUpdateEdges_toNodeId[i] = e.getNode2().getOsmId();
+                addOrUpdateEdges_cost[i] = e.getDistance();
+            }
             adapter.set_addOrUpdateEdges_fromNodeId(addOrUpdateEdges_fromNodeId);
             adapter.set_addOrUpdateEdges_toNodeId(addOrUpdateEdges_toNodeId);
             adapter.set_addOrUpdateEdges_cost(addOrUpdateEdges_cost);
@@ -183,8 +198,7 @@ public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
     }
 
     private static InMemoryMapDataSet getOsmDataSet() {
-        InputStream input = AutopilotAdapter.class
-                .getClassLoader()
+        InputStream input = ParserSettings.class
                 .getResourceAsStream("/map_ahornstrasse.osm");
         OsmXmlReader reader = new OsmXmlReader(input, true);
         try {

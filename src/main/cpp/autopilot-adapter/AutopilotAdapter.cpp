@@ -17,6 +17,30 @@ de_rwth_ryndin_modeling_autopilot_autopilot AUTOPILOT_INSTANCE;
 
 
 
+void copyJLongArrayToMatrix(JNIEnv *jenv, jlongArray &source, Matrix &dest) {
+  jsize len = jenv -> GetArrayLength(source);
+  if (len <= 0) {
+    return;
+  }
+  jlong *body = jenv -> GetLongArrayElements(source, 0);
+  for (int i=0; i<len; i++) {
+    dest(0,i) = body[i];
+  }
+  jenv -> ReleaseLongArrayElements(source, body, 0);
+}
+
+void copyJDoubleArrayToMatrix(JNIEnv *jenv, jdoubleArray &source, Matrix &dest) {
+  jsize len = jenv -> GetArrayLength(source);
+  if (len <= 0) {
+    return;
+  }
+  jdouble *body = jenv -> GetDoubleArrayElements(source, 0);
+  for (int i=0; i<len; i++) {
+    dest(0,i) = body[i];
+  }
+  jenv -> ReleaseDoubleArrayElements(source, body, 0);
+}
+
 
 
 /*
@@ -105,7 +129,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addNodes
  * Signature: ([J)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addNodes_1id
-  (JNIEnv *jenv, jobject jobj, jlongArray v) {}
+  (JNIEnv *jenv, jobject jobj, jlongArray v) { copyJLongArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.addNodes_id); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
@@ -113,7 +137,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addNodes
  * Signature: ([D)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addNodes_1gpsLat
-  (JNIEnv *jenv, jobject jobj, jdoubleArray v) {}
+  (JNIEnv *jenv, jobject jobj, jdoubleArray v) { copyJDoubleArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.addNodes_gpsLat); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
@@ -121,7 +145,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addNodes
  * Signature: ([D)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addNodes_1gpsLon
-  (JNIEnv *jenv, jobject jobj, jdoubleArray v) {}
+  (JNIEnv *jenv, jobject jobj, jdoubleArray v) { copyJDoubleArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.addNodes_gpsLon); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
@@ -137,7 +161,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1removeNo
  * Signature: ([J)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1removeNodes_1id
-  (JNIEnv *jenv, jobject jobj, jlongArray v) {}
+  (JNIEnv *jenv, jobject jobj, jlongArray v) { copyJLongArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.removeNodes_id); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
@@ -153,7 +177,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addOrUpd
  * Signature: ([J)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addOrUpdateEdges_1fromNodeId
-  (JNIEnv *jenv, jobject jobj, jlongArray v) {}
+  (JNIEnv *jenv, jobject jobj, jlongArray v) { copyJLongArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.addOrUpdateEdges_fromNodeId); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
@@ -161,7 +185,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addOrUpd
  * Signature: ([J)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addOrUpdateEdges_1toNodeId
-  (JNIEnv *jenv, jobject jobj, jlongArray v) {}
+  (JNIEnv *jenv, jobject jobj, jlongArray v) { copyJLongArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.addOrUpdateEdges_toNodeId); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
@@ -169,7 +193,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addOrUpd
  * Signature: ([D)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1addOrUpdateEdges_1cost
-  (JNIEnv *jenv, jobject jobj, jdoubleArray v) {}
+  (JNIEnv *jenv, jobject jobj, jdoubleArray v) { copyJDoubleArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.addOrUpdateEdges_cost); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
@@ -185,7 +209,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1removeEd
  * Signature: ([J)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1removeEdges_1fromNodeId
-  (JNIEnv *jenv, jobject jobj, jlongArray v) {}
+  (JNIEnv *jenv, jobject jobj, jlongArray v) { copyJLongArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.removeEdges_fromNodeId); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
@@ -193,7 +217,7 @@ JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1removeEd
  * Signature: ([J)V
  */
 JNIEXPORT void JNICALL Java_simulator_integration_AutopilotAdapter_set_1removeEdges_1toNodeId
-  (JNIEnv *jenv, jobject jobj, jlongArray v) {}
+  (JNIEnv *jenv, jobject jobj, jlongArray v) { copyJLongArrayToMatrix(jenv, v, AUTOPILOT_INSTANCE.removeEdges_toNodeId); }
 
 /*
  * Class:     simulator_integration_AutopilotAdapter
