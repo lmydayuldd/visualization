@@ -66,7 +66,15 @@ const Server = (function Server() {
             let res = [];
             for(let i=0; i<sfsScenarios.size(); ++i) {
                 let sfsScen = sfsScenarios.getSFSObject(i);
-                res.push({ id: sfsScen.getInt('id'), name: sfsScen.getUtfString('name'), tracks: sfsScen.getInt('tracks') });
+                //fetch tracks data
+                let sfsTracks = sfsScen.getSFSArray("tracks");
+                let tracks = [];
+                for(let t=0; t<sfsTracks.size(); ++t) {
+                    let sfsTrack = sfsTracks.getSFSObject(t);
+                    tracks.push({ id: sfsTrack.getInt("id"), name: sfsTrack.getString("name") });
+                }
+                
+                res.push({ id: sfsScen.getInt('id'), name: sfsScen.getUtfString('name'), tracks: tracks });
             }
             //execute registered callback for current command with response parameters
             if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](res);
@@ -103,11 +111,12 @@ const Server = (function Server() {
             if(!m_isConnected) return console.log("Not connected to the server!");
             sendRequest('get_scenarios', null, callback);
         },
-        loadScenario: function loadScenario(scenarioId, callback) {
+        loadScenario: function loadScenario(scenarioId, trackId, callback) {
             if(!m_isConnected) return console.log("Not connected to the server!");
-            if(!scenarioId) return console.log("Missing parameter: scenario");
+            if(!scenarioId || !trackId) return console.log("Missing parameter: scenarioId/trackId");
             var params = new SFS2X.SFSObject();
-            params.putInt("id", scenarioId);
+            params.putInt("scenarioId", scenarioId);
+            params.putInt("trackId", trackId);
             
             sendRequest('load_scenario', params, callback);
         },

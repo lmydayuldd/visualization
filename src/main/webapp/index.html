@@ -445,11 +445,21 @@
                     //prepare scenarios as dropdown data
                     let scenArr = [];
                     for(let i=0; i<scenarios.length; ++i) {
+                        let tracksArr = [];
+                        
+                        for(let t=0; t<senarios[i].tracks.length; ++t) {
+                            tracksArr.push({
+                                text: scenarios[i].tracks[t].name,
+                                onClick: function loadScenario() { //TODO test if i changes (reference issue ?)
+                                    console.log("Load scenario: " + scenarios[i].id + ". Follow track: " + scenarios[i].tracks[t].id);
+                                    WebService.WS_loadScenario(scenarios[i].id, scenarios[i].tracks[t].id, onScenarioLoaed);
+                                }
+                            });
+                        }
+                        
                         scenArr.push({
-                            text: scenarios[i].name + "(" + senarios[i].tracks + ")",
-                            onClick: function loadScenario() { //TODO test if i changes (reference issue ?)
-                                WebService.WS_loadScenario(scenarios[i].id, onScenarioLoaed);
-                            }
+                            text: scenarios[i].name,
+                            items: tracksArr
                          });
                     }
                     
