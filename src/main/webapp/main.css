@@ -113,8 +113,7 @@ width: 100%;
 .menu li {
 	position: relative;
 	list-style: none;
-	float: left;
-	display: block;
+	display: inline-block;
 	height: 40px;
 }
 
@@ -157,12 +156,6 @@ width: 100%;
 	left: 0;
 
 	opacity: 0;
-	
-	background: #1f2024;
-
-	-webkit-border-radius: 0 0 5px 5px;
-	-moz-border-radius: 0 0 5px 5px;
-	border-radius: 0 0 5px 5px;
 
 	-webkit-transition: opacity .25s ease .1s;
 	-moz-transition: opacity .25s ease .1s;
@@ -174,9 +167,16 @@ width: 100%;
 .menu li:hover > ul { opacity: 1; }
 
 .menu ul li {
+    display: block;
+    
 	height: 0;
 	overflow: hidden;
 	padding: 0;
+    
+    background: #1f2024;
+    
+    border: none;
+	border-bottom: 1px solid #353539;
 
 	-webkit-transition: height .25s ease .1s;
 	-moz-transition: height .25s ease .1s;
@@ -192,12 +192,22 @@ width: 100%;
 }
 
 .menu ul li a {
-	width: 100px;
-	padding: 4px 0 4px 4px;
+    border: none;
+    width: auto;
+    white-space: nowrap;
+	padding: 4px 4px 4px 4px;
 	margin: 0;
-
-	border: none;
-	border-bottom: 1px solid #353539;
 }
 
-.menu ul li:last-child a { border: none; }
+.menu ul li:last-child { border: none; }
+.menu ul li:last-child {
+    -webkit-border-radius: 0 0 5px 5px;
+	-moz-border-radius: 0 0 5px 5px;
+	border-radius: 0 0 5px 5px;
+}
+
+.menu ul li:only-child { border-bottom-left-radius: 0; }
+.menu ul li ul {
+    left: 100%;
+    top: 0;
+}

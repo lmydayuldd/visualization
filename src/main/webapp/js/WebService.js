@@ -89,14 +89,18 @@ const WebService = (function WebService() {
         WS_logout: function (callback) { Server.logout(callback); },
         
         WS_getScenarios: function (callback) { Server.getScenarios(callback); },
-        WS_loadScenario: function (scenarioId, callback) { Server.loadScenario(scenario, callback); },
+        WS_loadScenario: function (scenarioId, trackId, callback) { Server.loadScenario(scenarioId, trackId, callback); },
         
         //legacy
-        WS_attachListener: function WSattachListener(listener) { onNextFrame = listener; },
+        WS_attachListener: function WSattachListener(listener) {
+            onNextFrame = listener;
+            //listen to 'world_loaded' command and build world
+            Server.onWorld(onNextFrame);
+        },
 
         WS_start: function () { Server.start(); SIM_RUNNING = true; },
         WS_stop: function () { Server.stop(); SIM_RUNNING = false; },
 
-        WS_nextFrame: function () { if(SIM_RUNNING) Server.nextFrame(onNextFrame); }
+        WS_nextFrame: function () { if(SIM_RUNNING) Server.nextFrame(onNextFrame); },
     }
 })();

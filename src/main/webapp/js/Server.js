@@ -71,7 +71,7 @@ const Server = (function Server() {
                 let tracks = [];
                 for(let t=0; t<sfsTracks.size(); ++t) {
                     let sfsTrack = sfsTracks.getSFSObject(t);
-                    tracks.push({ id: sfsTrack.getInt("id"), name: sfsTrack.getString("name") });
+                    tracks.push({ id: sfsTrack.getInt("id"), name: sfsTrack.getUtfString("name") });
                 }
                 
                 res.push({ id: sfsScen.getInt('id'), name: sfsScen.getUtfString('name'), tracks: tracks });
@@ -92,6 +92,13 @@ const Server = (function Server() {
         else if(e.cmd = 'next_frame') {
             //TODO return next frame data
             let data = null;
+            if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](data);
+        }
+        /**
+        * Return world data.
+        */
+        else if(e.cmd = 'world_loaded') {
+            //TODO parse data and give it to handler
             if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](data);
         }
         //start and stop commands do not need callbacks
@@ -132,6 +139,10 @@ const Server = (function Server() {
         nextFrame: function nextFrame(callback) {
             if(!m_isConnected || !m_room) return console.log("Not connected to server/sector!");
             sendRequest('next_frame', null, callback); //stop scenario simulation(s)
+        },
+        //custom listeners
+        onWorld: function onWorld(callback) {
+            if(typeof callback == 'function') m_extensionListeners['world_loaded'] = callback;
         },
         //main API methods
         login: function login(user, pass, successCb, errorCb) {

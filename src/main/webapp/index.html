@@ -447,12 +447,12 @@
                     for(let i=0; i<scenarios.length; ++i) {
                         let tracksArr = [];
                         
-                        for(let t=0; t<senarios[i].tracks.length; ++t) {
+                        for(let t=0; t<scenarios[i].tracks.length; ++t) {
                             tracksArr.push({
                                 text: scenarios[i].tracks[t].name,
                                 onClick: function loadScenario() { //TODO test if i changes (reference issue ?)
                                     console.log("Load scenario: " + scenarios[i].id + ". Follow track: " + scenarios[i].tracks[t].id);
-                                    WebService.WS_loadScenario(scenarios[i].id, scenarios[i].tracks[t].id, onScenarioLoaed);
+                                    WebService.WS_loadScenario(scenarios[i].id, scenarios[i].tracks[t].id, onScenarioLoaded);
                                 }
                             });
                         }
