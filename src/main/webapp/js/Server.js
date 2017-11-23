@@ -50,6 +50,10 @@ const Server = (function Server() {
         //clean up callback references
         m_listeners = null;
         m_extensionListeners = null;
+        m_isConnected = false;
+        m_room = null;
+        
+        console.log('Disconnected from the server!');
     };
     let onRoomJoined = function onRoomJoined(e) { m_room = e.room; };
     let onRoomJoinError = function onRoomJoinError(e) { m_room = null; };
@@ -83,8 +87,76 @@ const Server = (function Server() {
         * Scenario simulation is prepared on the server.
         */
         else if(e.cmd = 'load_scenario') {
+            //Parse world data to JS object
+            let sfsParams = e.params;
+
+            let sfsBounds = sfsParams.getSFSObject("bounds");
+            let sfsStreets = sfsParams.getSFSArray("streets");
+            let sfsBuildings = sfsParams.getSFSArray("buildings");
+            //JS world representation
+            let world = {};
+            //parse bounds
+            world.bounds = {
+                maxX: sfsBounds.getDouble('maxX'),
+                maxY: sfsBounds.getDouble('maxY'),
+                maxZ: sfsBounds.getDouble('maxZ'),
+                minX: sfsBounds.getDouble('minX'),
+                minY: sfsBounds.getDouble('minY'),
+                minZ: sfsBounds.getDouble('minZ')
+            };
+            //reusable node-parsing
+            let getNodes = function getNodes(sfsNodes) {
+                let nodes = [];
+                for(let i=0; i<sfsNodes.size(); ++i) {
+                    let sfsNode = sfsNodes.getSFSObject(i);
+                    //parse node
+                    let node = {
+                        id: sfsNode.getLong('id'),
+                        x: sfsNode.getDouble('x'),
+                        y: sfsNode.getDouble('y'),
+                        z: sfsNode.getDouble('z')
+                    };
+                    //parse streetSign
+                    if(sfsNode.containsKey('streetSign')) {
+                        let sign = sfsNode.getSFSObject('streetSign');
+                        node.streetSign = {
+                            id: sign.getLong('id'),
+                            type: sign.getUtfString('type'),
+                            one: sign.getBoolean('one'),
+                            two: sign.getBoolean('two'),
+                            x1: sign.getDouble('x1'),
+                            x2: sign.getDouble('x2'),
+                            y1: sign.getDouble('y1'),
+                            y2: sign.getDouble('y2'),
+                            z1: sign.getDouble('z1'),
+                            z2: sign.getDouble('z2'),
+                        }
+                    }
+                    //add node
+                    nodes.push(node);
+                }
+                return nodes;
+            }
+            
+            //parse streets
+            world.streets = [];
+            for(let i=0; i<sfsStreets.size(); ++i) {
+                let sfsStr = sfsStreets.getSFSObject(i);
+                world.streets.push({
+                    streetWidth: sfsStr.getDouble('streetWidth'),
+                    nodes: getNodes(sfsStr.getSFSArray('nodes'))
+                });
+            }
+            //parse buildings
+            world.buildings = [];
+            for(let i=0; i<sfsStreets.size(); ++i) {
+                let sfsB = sfsBuildings.getSFSObject(i);
+                world.streets.push({ nodes: getNodes(sfsB.getSFSArray('nodes')) });
+            }
+            console.log('World data parsed');
+            console.log(world);
             //execute callback if registered
-            if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd]();
+            if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](world);
         }
         /**
         * Return next frame data.
@@ -94,14 +166,6 @@ const Server = (function Server() {
             let data = null;
             if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](data);
         }
-        /**
-        * Return world data.
-        */
-        else if(e.cmd = 'world_loaded') {
-            //TODO parse data and give it to handler
-            if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](data);
-        }
-        //start and stop commands do not need callbacks
     };
     
     //private methods
@@ -139,10 +203,6 @@ const Server = (function Server() {
         nextFrame: function nextFrame(callback) {
             if(!m_isConnected || !m_room) return console.log("Not connected to server/sector!");
             sendRequest('next_frame', null, callback); //stop scenario simulation(s)
-        },
-        //custom listeners
-        onWorld: function onWorld(callback) {
-            if(typeof callback == 'function') m_extensionListeners['world_loaded'] = callback;
         },
         //main API methods
         login: function login(user, pass, successCb, errorCb) {

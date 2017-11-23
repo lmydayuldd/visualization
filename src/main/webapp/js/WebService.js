@@ -92,11 +92,7 @@ const WebService = (function WebService() {
         WS_loadScenario: function (scenarioId, trackId, callback) { Server.loadScenario(scenarioId, trackId, callback); },
         
         //legacy
-        WS_attachListener: function WSattachListener(listener) {
-            onNextFrame = listener;
-            //listen to 'world_loaded' command and build world
-            Server.onWorld(onNextFrame);
-        },
+        WS_attachListener: function WSattachListener(listener) { onNextFrame = listener; },
 
         WS_start: function () { Server.start(); SIM_RUNNING = true; },
         WS_stop: function () { Server.stop(); SIM_RUNNING = false; },
