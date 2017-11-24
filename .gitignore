@@ -5,6 +5,7 @@
 .classpath
 .idea
 .git
+src/main/cpp/autopilot/**
 *.iml
 *.log*
 *logs*
