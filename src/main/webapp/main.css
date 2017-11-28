@@ -24,9 +24,25 @@ button:hover { background:#333 }
 
 #oldie { background:rgb(50,0,0) !important; color:#fff !important; margin-top:7em!important }
 
-.lbl { color:#fff; font-size:14px; font-weight:bold; position: absolute; z-index:100; text-shadow:#000 1px 1px 1px; background-color:rgba(0,0,0,0.85); padding:1em }
-#lbl1 { right:0px; background-color:#FF0000 }
-#lbl2 { text-align:left; bottom:0px; right:0px }
+.lbl {
+    color:#fff;
+    font-size:14px;
+    font-weight:bold;
+    position: absolute;
+    z-index:100;
+    text-shadow:#000 1px 1px 1px;
+    background-color:rgba(0,0,0,0.85);
+    padding:1em;
+    text-align:left;
+    bottom:0px;
+    right:0px;
+    
+    opacity: 0.0001;
+    transition: opacity .5s;
+}
+.lbl:hover { opacity: 1; }
+
+
 
 #footer {
 position: fixed;

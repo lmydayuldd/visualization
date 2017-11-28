@@ -94,8 +94,8 @@ const WebService = (function WebService() {
         //legacy
         WS_attachListener: function WSattachListener(listener) { onNextFrame = listener; },
 
-        WS_start: function () { Server.start(); SIM_RUNNING = true; },
-        WS_stop: function () { Server.stop(); SIM_RUNNING = false; },
+        WS_start: function () { SIM_RUNNING = true; this.WS_nextFrame(); }, //just ask for next frame
+        WS_stop: function (callback) { Server.leaveRoom(callback); SIM_RUNNING = false; },
 
         WS_nextFrame: function () { if(SIM_RUNNING) Server.nextFrame(onNextFrame); },
     }

@@ -47,33 +47,8 @@
 	</head>
 
 	<body>
-<!--
-		<div id="lbl1" class="lbl">
-				<button id="startSimulation" onclick="onStartClick(); WebService.WS_start(); WebService.WS_nextFrame()">Start</button>
-				<button id="stopSimulation" onclick="WebService.WS_stop()">Stop</button>
-		</div>
--->
 
-<!--
-		<div id="d">
-			<div id="buttons_cars"></div>
-			<div id="footer">
-				<div id="stacked">
-					<div>
-						<button id="Up" class="big-btn"><i class="fa fa-arrow-up fa-lg" style="font-size: 30px" aria-hidden="true">W</i></button>
-					</div>
-					<div>
-						<button id="Left" class="big-btn"><i class="fa fa-arrow-left fa-lg" style="font-size: 30px" aria-hidden="true">A</i></button>
-						<button id="Down" class="big-btn"><i class="fa fa-arrow-down fa-lg" style="font-size: 30px" aria-hidden="true">S</i>
-						</button>
-						<button id="Right" class="big-btn"><i class="fa fa-arrow-right fa-lg" style="font-size: 30px" aria-hidden="true">D</i></button>
-					</div>
-				</div>
-			</div>
-		</div>
--->
-
-		<div id="lbl2" class="lbl">
+		<div class="lbl">
 			Controls: <br />
 			c - change Camera<br />
 			u - Orbit Control<br />
@@ -197,7 +172,7 @@
 				scene = new THREE.Scene();
 
 				//Add fog
-				//scene.fog = new THREE.Fog( 0x808080, 2500, 8000 );
+//				scene.fog = new THREE.Fog( 0x808080, 2500, 8000 );
 				scene.background = textureCube; //Fog does not work with background!
                 
                 var ENV_BUILDER = new EnvBuilder(tgaLoader, scene);
@@ -273,6 +248,9 @@
                     ENV_BUILDER.clear();
                     MESH_BUILDER.clear();
                     
+                    //FIXME just for test purpose, in order to decrease drawing time
+                    if(data.length > 500) data = data.slice(0, 500);
+                    
 					var prevNode;
 					for(var i=0; i<data.length; ++i) {
 						//nodes for streets and signs
@@ -282,9 +260,10 @@
 								meshHelper(MESH_BUILDER, node, prevNode);
 							}
 							prevNode = {x: node.x, z: node.z};
-
+                            
 							data[i].nodes[n] = new THREE.Vector3(node.x, node.y, node.z);
 						}
+                        
 						ENV_BUILDER.drawRoad(data[i].nodes, data[i].streetWidth);
 					}
           			resolve();
@@ -405,14 +384,16 @@
 					WebService.WS_screenshot({	carId, screenshot });
 					*/
 				}
-
-				//attach DataModel to WebSocket connection
-				WebService.WS_attachListener(DataModel.onData);
-                
                 
                 //==========================================================================
                 //prepare server callbacks
                 let onScenarioLoaded = function onScenarioLoaded(res) {
+                    if(!res) return;
+                    //build world
+                    DataModel.onData(res);
+                    //attach DataModel to WebSocket connection
+				    WebService.WS_attachListener(DataModel.onData);
+                    
                     //update controls
                     NavBar([
                         {
@@ -425,11 +406,13 @@
                             items: SIMULATED_CARS
                         },
                         {
-                            text: 'Pause / Play',
-                            clas: 'fa fa-pause',
-                            onClick: function togglePlay() {
-                                if(WebService.WS_isSimRunning()) WebService.WS_stop();
-                                else WebService.WS_start();
+                            text: 'Play',
+                            clas: 'fa fa-play',
+                            onClick: function play() {
+                                //disable orbit controls
+                                controls.enabled = false;
+                                
+                                WebService.WS_start();
                             }
                         },
                         {
@@ -441,7 +424,6 @@
                 }
                 
                 let onScenariosReady = function onScenariosReady(scenarios) {
-                    console.log(scenarios);
                     //prepare scenarios as dropdown data
                     let scenArr = [];
                     for(let i=0; i<scenarios.length; ++i) {
@@ -450,8 +432,7 @@
                         for(let t=0; t<scenarios[i].tracks.length; ++t) {
                             tracksArr.push({
                                 text: scenarios[i].tracks[t].name,
-                                onClick: function loadScenario() { //TODO test if i changes (reference issue ?)
-                                    console.log("Load scenario: " + scenarios[i].id + ". Follow track: " + scenarios[i].tracks[t].id);
+                                onClick: function loadScenario() {
                                     WebService.WS_loadScenario(scenarios[i].id, scenarios[i].tracks[t].id, onScenarioLoaded);
                                 }
                             });
@@ -504,10 +485,15 @@
                 //init NavBar
                 initNav();
                 
-               
-
-                //load environment data from server
-//                WebService.get('/web-app/env/world').then(DataModel.onData);
+                function onStopClicked() {
+                    //stop simulation
+                    WebService.WS_stop(function onSectorLeave() {
+                        //fetch scenarios again and build navigation bar
+                        WebService.WS_getScenarios(onScenariosReady);
+                    });
+                    //clear up car information for previous simulation
+                    SIMULATED_CARS = [];
+                }
 
 				//==========================================================================
 
@@ -580,31 +566,12 @@
 			}
 			
 			//==========================================================================
-			
-			/**
-			*	Called when start button is clicked
-			*/
-			function onStartClick() {
-				// Disable orbit controls
-				controls.enabled = false;
-                
-                WebService.WS_start();
-                WebService.WS_nextFrame();
-			}
-            function onStopClicked() {
-                //stop simulation
-                WebService.WS_stop();
-                //clear up car information for previous simulation
-                SIMULATED_CARS = [];
-                //fetch scenarios again and build navigation bar
-                WebService.WS_getScenarios(onScenariosReady);
-            }
 
 			/**
 			*	toggle some HUD elements
 			*/ 
 			function toggleHUD() {
-				var HUD = ["nav-menu", "lbl2"];
+				var HUD = ["nav-menu"];
 
 				for(var i = 0; i<HUD.length; i++) {
 					var display = document.getElementById(HUD[i]).style.display;

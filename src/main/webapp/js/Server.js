@@ -26,7 +26,8 @@ const Server = (function Server() {
     let m_listeners = {
         onLogin: function () {},
         onLoginError: function () {},
-        onLogout: function () {}
+        onLogout: function () {},
+        onUserExitRoom: function () {}
     };
     let m_extensionListeners = {};
     
@@ -55,7 +56,7 @@ const Server = (function Server() {
         
         console.log('Disconnected from the server!');
     };
-    let onRoomJoined = function onRoomJoined(e) { m_room = e.room; };
+    let onRoomJoined = function onRoomJoined(e) { m_room = e.room; console.log("Joined room: " + m_room); };
     let onRoomJoinError = function onRoomJoinError(e) { m_room = null; };
     
     let onExtensionResponse = function onExtensionResponse(e) {
@@ -86,7 +87,7 @@ const Server = (function Server() {
         /**
         * Scenario simulation is prepared on the server.
         */
-        else if(e.cmd = 'load_scenario') {
+        else if(e.cmd == 'load_scenario') {
             //Parse world data to JS object
             let sfsParams = e.params;
 
@@ -122,8 +123,8 @@ const Server = (function Server() {
                         node.streetSign = {
                             id: sign.getLong('id'),
                             type: sign.getUtfString('type'),
-                            one: sign.getBoolean('one'),
-                            two: sign.getBoolean('two'),
+                            one: sign.getBool('one'),
+                            two: sign.getBool('two'),
                             x1: sign.getDouble('x1'),
                             x2: sign.getDouble('x2'),
                             y1: sign.getDouble('y1'),
@@ -149,7 +150,7 @@ const Server = (function Server() {
             }
             //parse buildings
             world.buildings = [];
-            for(let i=0; i<sfsStreets.size(); ++i) {
+            for(let i=0; i<sfsBuildings.size(); ++i) {
                 let sfsB = sfsBuildings.getSFSObject(i);
                 world.streets.push({ nodes: getNodes(sfsB.getSFSArray('nodes')) });
             }
@@ -161,9 +162,68 @@ const Server = (function Server() {
         /**
         * Return next frame data.
         */
-        else if(e.cmd = 'next_frame') {
-            //TODO return next frame data
-            let data = null;
+        else if(e.cmd == 'next_frame') {
+            //Parse frame data to JS object
+            let sfsParams = e.params;
+            
+            let sfsCars = sfsParams.getSFSArray("cars");
+            let sfsPedestrians = sfsParams.getSFSArray("pedestrians");
+            let sfsObjects = sfsParams.getSFSArray("staticBoxObjects");
+            
+            //3D point parser function
+            let getPoint = function getPoint(sfsPoint) {
+                return {
+                    x: sfsPoint.getDouble('x'),
+                    y: sfsPoint.getDouble('y'),
+                    z: sfsPoint.getDouble('z')
+                }
+            };
+            
+            //JS frame data representation
+            let data = {
+                raining: sfsParams.getBool('raining'),
+                cars: [],
+                pedestrians: [],
+                staticBoxObjects: []
+            };
+            
+            //parse cars
+            for(let i=0; i<sfsCars.size(); ++i) {
+                let sfsC = sfsCars.getSFSObject(i);
+                data.cars.push({
+                    id: sfsC.getLong('id'),
+                    position: getPoint(sfsC.getSFSObject('position')),
+                    velocity: getPoint(sfsC.getSFSObject('velocity')),
+                    acceleration: getPoint(sfsC.getSFSObject('acceleration'))
+                });
+            }
+            //parse pedestrians
+            for(let i=0; i<sfsPedestrians.size(); ++i) {
+                let sfsP = sfsPedestrians.getSFSObject(i);
+                data.pedestrians.push({
+                    id: sfsP.getLong('id'),
+                    position: getPoint(sfsP.getSFSObject('position')),
+                    iscrossing: sfsP.getBool('iscrossing'),
+                    direction: sfsP.getBool('direction'),
+                    isleftpavement: sfsP.getBool('isleftpavement')
+                });
+            }
+            //parse static objects
+            for(let i=0; i<sfsObjects.size(); ++i) {
+                let sfsObj = sfsObjects.getSFSObject(i);
+                data.staticBoxObjects.push({
+                    id: sfsObj.getLong('id'),
+                    position: getPoint(sfsObj.getSFSObject('position')),
+                    length: sfsObj.getDouble('length'),
+                    width: sfsObj.getDouble('width'),
+                    height: sfsObj.getDouble('height'),
+                    objectType: sfsObj.getInt('objectType')
+                });
+            }
+            
+            console.log("New frame data");
+            console.log(data);
+            
             if(m_extensionListeners[e.cmd]) m_extensionListeners[e.cmd](data);
         }
     };
@@ -192,13 +252,19 @@ const Server = (function Server() {
             sendRequest('load_scenario', params, callback);
         },
         //extension requests - Sector
-        start: function start() {
+        leaveRoom: function leaveRoom(callback) {
             if(!m_isConnected || !m_room) return console.log("Not connected to server/sector!");
-            sendRequest('start'); //start scenario simulation(s)
-        },
-        stop: function stop() {
-            if(!m_isConnected || !m_room) return console.log("Not connected to server/sector!");
-            sendRequest('stop'); //stop scenario simulation(s)
+            //remove old listener
+            sfs.removeEventListener(SFS2X.SFSEvent.USER_EXIT_ROOM, m_listeners.onUserExitRoom, this);
+            //redefine listener
+            m_listeners.onUserExitRoom = function onUserExitRoom(e) {
+                m_room = null; //clean up room details
+                if(typeof callback == 'function') callback();
+            };
+            //re-register listener
+            sfs.addEventListener(SFS2X.SFSEvent.USER_EXIT_ROOM, m_listeners.onUserExitRoom, this);
+            
+            sfs.send(new SFS2X.LeaveRoomRequest(m_room));
         },
         nextFrame: function nextFrame(callback) {
             if(!m_isConnected || !m_room) return console.log("Not connected to server/sector!");
