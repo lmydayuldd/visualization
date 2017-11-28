@@ -12,6 +12,8 @@ import de.topobyte.osm4j.core.resolve.EntityNotFoundException;
 import de.topobyte.osm4j.xml.dynsax.OsmXmlReader;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.math3.linear.RealVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import simulation.environment.World;
 import simulation.environment.WorldModel;
 import simulation.environment.osm.ParserSettings;
@@ -27,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AutopilotAdapter.class);
 
     private final AutopilotAdapter adapter;
 
@@ -69,6 +73,9 @@ public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
         double engine = getCurrentActuatorValue(VehicleActuatorType.VEHICLE_ACTUATOR_TYPE_MOTOR);
         double steering = getCurrentActuatorValue(VehicleActuatorType.VEHICLE_ACTUATOR_TYPE_STEERING);
         double brakes = getCurrentActuatorValue(VehicleActuatorType.VEHICLE_ACTUATOR_TYPE_BRAKES_BACK_LEFT);
+        LOG.debug("velocity " + currentVelocity);
+        LOG.debug("position " + positionLat + " " + positionLon);
+        LOG.debug("actuation " + brakes + " " + engine + " " + steering);
         adapter.set_timeIncrement(timeIncrement);
         adapter.set_currentVelocity(currentVelocity);
         adapter.set_currentGpsLat(positionLat);
@@ -98,6 +105,7 @@ public class AutopilotAdapterAsFunctionBlock implements FunctionBlockInterface {
                 BusEntry.ACTUATOR_STEERING.toString(),
                 steering
         );
+        LOG.debug("control commands " + brakes + " " + engine + " " + steering);
         return result;
     }
 
